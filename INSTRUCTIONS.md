@@ -77,7 +77,7 @@ That dead-end kicked off the move to a self-hosted MCP/KiCad workflow.
 | Function                  | Part           | LCSC        | Stock    | Notes                               |
 | ------------------------- | -------------- | ----------- | -------- | ----------------------------------- |
 | USB-C PD sink controller  | CH224K         | `C970725`   | 1,996    | ESSOP-10, requests up to 20 V       |
-| 3S Li-ion charger         | BQ25700A       | `C965493`   | 3,224    | QFN-32, 3.5–24 V in, 4 A, SMBus     |
+| 3S Li-ion charger         | BQ24650RVAR    | `C53712`    | 5,453    | VQFN-16, 5–28 V in, 10 A NMOS-syncbuck, stock KiCAD symbol |
 | BMS / cell-monitor        | BQ7692003PWR   | `C601650`   | 2,730    | TSSOP-20, 3-5S, I²C, balancing      |
 | 4-switch buck-boost       | LM5176PWPR     | `C442493`   | 5,497    | HTSSOP-28, 4.2-55 V, controller     |
 | Protection / power FETs   | (TBD dual N)   | `C353066`   | 81,644   | SOP-8 dual-N, 30 V / 8 A / 26 mΩ    |
