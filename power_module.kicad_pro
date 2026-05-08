@@ -1,0 +1,8 @@
+{
+  "board": {
+    "filename": "power_module.kicad_pcb"
+  },
+  "sheets": [
+    ["root", "power_module.kicad_sch"]
+  ]
+}
