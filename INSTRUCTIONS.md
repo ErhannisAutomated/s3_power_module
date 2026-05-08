@@ -72,12 +72,19 @@ That dead-end kicked off the move to a self-hosted MCP/KiCad workflow.
    feedback). Implies all SMT, footprint constraints (no exotic
    packages), prefer JLC Basic where reasonable.
 
-## Design summary (to be filled in once decisions are made)
+## Design summary
 
-- Charger IC:
-- BMS IC:
-- Output regulator:
-- USB-C PD sink controller:
-- Cell holder: `C19184086`
-- Off-switch: TBD
-- Telemetry interface: TBD (likely I²C on the BMS bus)
+| Function                  | Part           | LCSC        | Stock    | Notes                               |
+| ------------------------- | -------------- | ----------- | -------- | ----------------------------------- |
+| USB-C PD sink controller  | CH224K         | `C970725`   | 1,996    | ESSOP-10, requests up to 20 V       |
+| 3S Li-ion charger         | BQ25700A       | `C965493`   | 3,224    | QFN-32, 3.5–24 V in, 4 A, SMBus     |
+| BMS / cell-monitor        | BQ7692003PWR   | `C601650`   | 2,730    | TSSOP-20, 3-5S, I²C, balancing      |
+| 4-switch buck-boost       | LM5176PWPR     | `C442493`   | 5,497    | HTSSOP-28, 4.2-55 V, controller     |
+| Protection / power FETs   | (TBD dual N)   | `C353066`   | 81,644   | SOP-8 dual-N, 30 V / 8 A / 26 mΩ    |
+| Cell holder (3 × 18650)   |                | `C19184086` | 2,977    | BH-18650-B5BA016                    |
+| Off-switch                | (small SMD)    | TBD         |          | Signal-only → BMS shutdown pin      |
+
+**Dual N-MOSFET note:** `C353066` (30 V Vds, 8 A, 26 mΩ@10 V, 1.5 V
+Vgs(th)) used for both the BMS protection FETs and the LM5176's four
+power FETs. 30 V Vds is OK with margin for 12.6 V battery + 20 V PD
+input. Logic-level Vgs(th) matches BQ76920's gate-drive output.
