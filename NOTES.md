@@ -98,6 +98,20 @@ Bottom:
 - Footprint to set: `Package_SO:SO-8_3.9x4.9mm_P1.27mm` (or the
   specific manufacturer footprint if the symbol has a default).
 
+## PCB layout preferences (for when we get there)
+
+- **4-layer stackup**, not 2-layer:
+    L1 signal · L2 GND plane · L3 power plane · L4 signal.
+- **High-current trace widths sized by ampacity** (IPC-2221 / JLC
+  calculator, not eyeballed). Power-rail nets to identify ahead of
+  routing: `BAT+`, `BAT-`, `V12_OUT`, charger inductor / FET nodes,
+  buck-boost inductor / FET nodes. Create per-current-band netclasses
+  (`POWER_4A`, `POWER_2A`, signal-default) before routing.
+- Heads-up: **layer count and per-class trace widths have not been
+  tested in the MCP server**. Watch for tooling weirdness (autorouter
+  ignoring class widths, inner-layer pours misbehaving, etc.) and log
+  to `mcp_server_issues.md`. See `feedback_pcb_stackup.md` for detail.
+
 ## Other live threads (cross-reference)
 
 - MCP server `fixes/improvements_2` branch has 13 commits today;
