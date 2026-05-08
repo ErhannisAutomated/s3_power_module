@@ -38,40 +38,35 @@ That dead-end kicked off the move to a self-hosted MCP/KiCad workflow.
   compact than three single holders flux.ai used).
 - The earlier flux.ai attempt used three separate holders — avoid that.
 
+## Decisions made (2026-05-08)
+
+1. **Output topology:** 4-switch buck-boost regulator, ~4 A, true
+   regulated 12 V output across the full 9–12.6 V battery range.
+2. **Off-switch placement:** Single pair of CHG/DSG protection
+   N-channel MOSFETs in series with battery negative (low side).
+   These are driven by the BMS IC's gate-drive pins for fault
+   protection (over-current, short-circuit, over-charge,
+   deep-discharge). User on/off switch toggles the BMS IC's
+   shutdown / wake pin — opening the DSG FET turns the whole module
+   off via the same FETs. No separate output MOSFET.
+   - Rationale: protection FETs at battery negative is the standard
+     BMS architecture (matches datasheet). Reusing them for the user
+     switch avoids a redundant high-side FET on the output, drops
+     quiescent in OFF state to BMS sleep current (tens of µA), and
+     keeps current paths short.
+3. **Telemetry:** I²C breakout from BMS to a 4-pin header
+   (SCL/SDA/GND/3V3) — standard pinout for connecting to a host MCU
+   when the module is plugged into a larger board.
+
 ## Open decisions to confirm before schematic work
-
-1. **Output topology.** A 3S pack is 9 V (cutoff) – 12.6 V (full
-   charge), so the requested "regulated 12 V output" needs either:
-   - A **buck-boost** converter (true 12 V across full battery range,
-     more complex), or
-   - A **boost-only** converter (fails near full charge when battery
-     ≥ 12 V), or
-   - **No output regulator** (output = battery voltage, varies
-     9 V–12.6 V — call it "nominal 12 V"; downstream uses tolerate it).
-   - A **buck** to 12 V from a higher-voltage rail (rules out 3S; would
-     need 4S — but spec is 3S).
-   Recommend buck-boost for "real 12 V"; or accept unregulated and
-   simplify a lot. Need to choose.
-
-2. **Off-switch behaviour.** Direct power interrupt (SPST in the high
-   current path) is simplest mechanically but the switch itself must
-   handle 4 A+. Signal-to-MOSFET (SPST signals an enable pin) is
-   electrically cleaner and the switch is cheap, but it adds a
-   permanently-on quiescent path through the gate-drive logic. Need
-   to choose.
-
-3. **Telemetry.** The BMS chip we pick (e.g. BQ76920) typically has
-   I²C built in — comes "free". Spec says optional; default is
-   yes/include unless it pushes part count significantly.
 
 4. **Hot-swap individual cells.** Spec says nice-to-have; deferred
    unless an obvious cheap path appears.
 
 5. **Form factor.** Module-style, so output is 2 pins (12 V / GND).
-   Mechanical questions: triple cell holder dictates a footprint of
-   roughly 78 × 22 mm just for the cells. Total board could be
-   ~80 × 50 mm with charger + BMS + regulator alongside. Need to
-   confirm size constraint or none.
+   Triple cell holder is roughly 78 × 22 mm just for the cells. Total
+   board likely ~80 × 50 mm with charger + BMS + buck-boost alongside.
+   Confirm size constraint or proceed open-ended.
 
 6. **Assembly:** JLC SMT assembly preferred (per general project
    feedback). Implies all SMT, footprint constraints (no exotic
