@@ -713,6 +713,1283 @@
         )
       )
     )
+  
+        	(symbol "Battery_Management:BQ76920PW"
+    		(exclude_from_sim no)
+    		(in_bom yes)
+    		(on_board yes)
+    		(property "Reference" "U"
+    			(at -10.16 19.05 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(justify left)
+    			)
+    		)
+    		(property "Value" "BQ76920PW"
+    			(at 12.7 19.05 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(justify right)
+    			)
+    		)
+    		(property "Footprint" "Package_SO:TSSOP-20_4.4x6.5mm_P0.65mm"
+    			(at 22.86 -19.05 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/bq76920.pdf"
+    			(at 17.78 13.97 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "Description" "Lithium battery monitor, 3-5 cells, integrated balancing, I2C interface, TSSOP-20"
+    			(at 0 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "ki_keywords" "lithium battery balance charge afe"
+    			(at 0 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "ki_fp_filters" "TSSOP*4.4x6.5mm*P0.65mm*"
+    			(at 0 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(symbol "BQ76920PW_0_1"
+    			(rectangle
+    				(start -10.16 17.78)
+    				(end 10.16 -17.78)
+    				(stroke
+    					(width 0.254)
+    					(type default)
+    				)
+    				(fill
+    					(type background)
+    				)
+    			)
+    		)
+    		(symbol "BQ76920PW_1_0"
+    			(pin bidirectional line
+    				(at -12.7 7.62 0)
+    				(length 2.54)
+    				(name "ALERT"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "20"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin passive line
+    				(at -12.7 -2.54 0)
+    				(length 2.54)
+    				(name "TS1"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "6"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin passive line
+    				(at -12.7 -7.62 0)
+    				(length 2.54)
+    				(name "CAP1"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "7"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin no_connect line
+    				(at -2.54 -17.78 90)
+    				(length 2.54)
+    				(hide yes)
+    				(name "NC"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "11"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin power_in line
+    				(at 0 20.32 270)
+    				(length 2.54)
+    				(name "REGSRC"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "9"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin power_out line
+    				(at 12.7 15.24 180)
+    				(length 2.54)
+    				(name "REGOUT"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "8"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin input line
+    				(at 12.7 10.16 180)
+    				(length 2.54)
+    				(name "BAT"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "10"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin input line
+    				(at 12.7 5.08 180)
+    				(length 2.54)
+    				(name "VC5"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "12"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin input line
+    				(at 12.7 2.54 180)
+    				(length 2.54)
+    				(name "VC4"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "13"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin input line
+    				(at 12.7 0 180)
+    				(length 2.54)
+    				(name "VC3"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "14"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin input line
+    				(at 12.7 -2.54 180)
+    				(length 2.54)
+    				(name "VC2"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "15"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin input line
+    				(at 12.7 -5.08 180)
+    				(length 2.54)
+    				(name "VC1"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "16"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin input line
+    				(at 12.7 -7.62 180)
+    				(length 2.54)
+    				(name "VC0"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "17"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin input line
+    				(at 12.7 -12.7 180)
+    				(length 2.54)
+    				(name "SRP"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "18"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin input line
+    				(at 12.7 -15.24 180)
+    				(length 2.54)
+    				(name "SRN"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "19"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    		)
+    		(symbol "BQ76920PW_1_1"
+    			(pin bidirectional line
+    				(at -12.7 15.24 0)
+    				(length 2.54)
+    				(name "SDA"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "4"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin input line
+    				(at -12.7 12.7 0)
+    				(length 2.54)
+    				(name "SCL"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "5"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin output line
+    				(at -12.7 -12.7 0)
+    				(length 2.54)
+    				(name "DSG"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "1"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin output line
+    				(at -12.7 -15.24 0)
+    				(length 2.54)
+    				(name "CHG"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "2"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin power_in line
+    				(at 0 -20.32 90)
+    				(length 2.54)
+    				(name "VSS"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "3"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    		)
+    		(embedded_fonts no)
+    	)
+  
+        	(symbol "Device:Battery_Cell"
+    		(pin_numbers
+    			(hide yes)
+    		)
+    		(pin_names
+    			(offset 0)
+    			(hide yes)
+    		)
+    		(exclude_from_sim no)
+    		(in_bom yes)
+    		(on_board yes)
+    		(property "Reference" "BT"
+    			(at 2.54 2.54 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(justify left)
+    			)
+    		)
+    		(property "Value" "Battery_Cell"
+    			(at 2.54 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(justify left)
+    			)
+    		)
+    		(property "Footprint" ""
+    			(at 0 1.524 90)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "Datasheet" "~"
+    			(at 0 1.524 90)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "Description" "Single-cell battery"
+    			(at 0 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "ki_keywords" "battery cell"
+    			(at 0 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(symbol "Battery_Cell_0_1"
+    			(rectangle
+    				(start -2.286 1.778)
+    				(end 2.286 1.524)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type outline)
+    				)
+    			)
+    			(rectangle
+    				(start -1.524 1.016)
+    				(end 1.524 0.508)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type outline)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 0 1.778) (xy 0 2.54)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 0 0.762) (xy 0 0)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 0.762 3.048) (xy 1.778 3.048)
+    				)
+    				(stroke
+    					(width 0.254)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 1.27 3.556) (xy 1.27 2.54)
+    				)
+    				(stroke
+    					(width 0.254)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    		)
+    		(symbol "Battery_Cell_1_1"
+    			(pin passive line
+    				(at 0 5.08 270)
+    				(length 2.54)
+    				(name "+"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "1"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin passive line
+    				(at 0 -2.54 90)
+    				(length 2.54)
+    				(name "-"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "2"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    		)
+    		(embedded_fonts no)
+    	)
+  
+        	(symbol "Transistor_FET:FDS9926A"
+    		(pin_names
+    			(hide yes)
+    		)
+    		(exclude_from_sim no)
+    		(in_bom yes)
+    		(on_board yes)
+    		(property "Reference" "Q"
+    			(at 5.08 1.905 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(justify left)
+    			)
+    		)
+    		(property "Value" "FDS9926A"
+    			(at 5.08 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(justify left)
+    			)
+    		)
+    		(property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"
+    			(at 5.08 -1.905 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    					(italic yes)
+    				)
+    				(justify left)
+    				(hide yes)
+    			)
+    		)
+    		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/FDS9926A-D.pdf"
+    			(at 5.08 -3.81 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(justify left)
+    				(hide yes)
+    			)
+    		)
+    		(property "Description" "6.5A Id, 20V Vds, Dual N-Channel MOSFET, 30mOhm Ron, SO-8"
+    			(at 0 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "ki_keywords" "Dual N-Channel MOSFET"
+    			(at 0 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "ki_fp_filters" "SOIC*3.9x4.9mm*P1.27mm*"
+    			(at 0 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(symbol "FDS9926A_0_1"
+    			(polyline
+    				(pts
+    					(xy 0.254 1.905) (xy 0.254 -1.905)
+    				)
+    				(stroke
+    					(width 0.254)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 0.254 0) (xy -2.54 0)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 0.762 2.286) (xy 0.762 1.27)
+    				)
+    				(stroke
+    					(width 0.254)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 0.762 0.508) (xy 0.762 -0.508)
+    				)
+    				(stroke
+    					(width 0.254)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 0.762 -1.27) (xy 0.762 -2.286)
+    				)
+    				(stroke
+    					(width 0.254)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 0.762 -1.778) (xy 3.302 -1.778) (xy 3.302 1.778) (xy 0.762 1.778)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 1.016 0) (xy 2.032 0.381) (xy 2.032 -0.381) (xy 1.016 0)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type outline)
+    				)
+    			)
+    			(circle
+    				(center 1.651 0)
+    				(radius 2.794)
+    				(stroke
+    					(width 0.254)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 2.54 2.54) (xy 2.54 1.778)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(circle
+    				(center 2.54 1.778)
+    				(radius 0.254)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type outline)
+    				)
+    			)
+    			(circle
+    				(center 2.54 -1.778)
+    				(radius 0.254)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type outline)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 2.54 -2.54) (xy 2.54 0) (xy 0.762 0)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 2.794 0.508) (xy 2.921 0.381) (xy 3.683 0.381) (xy 3.81 0.254)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy 3.302 0.381) (xy 2.921 -0.254) (xy 3.683 -0.254) (xy 3.302 0.381)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    		)
+    		(symbol "FDS9926A_1_1"
+    			(pin passive line
+    				(at -5.08 0 0)
+    				(length 2.54)
+    				(name "G1"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "2"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin passive line
+    				(at 2.54 5.08 270)
+    				(length 2.54)
+    				(name "D1"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "7"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin passive line
+    				(at 2.54 5.08 270)
+    				(length 2.54)
+    				(hide yes)
+    				(name "D1"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "8"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin passive line
+    				(at 2.54 -5.08 90)
+    				(length 2.54)
+    				(name "S1"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "1"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    		)
+    		(symbol "FDS9926A_2_1"
+    			(pin passive line
+    				(at -5.08 0 0)
+    				(length 2.54)
+    				(name "G2"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "4"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin passive line
+    				(at 2.54 5.08 270)
+    				(length 2.54)
+    				(name "D2"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "5"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin passive line
+    				(at 2.54 5.08 270)
+    				(length 2.54)
+    				(hide yes)
+    				(name "D2"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "6"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin passive line
+    				(at 2.54 -5.08 90)
+    				(length 2.54)
+    				(name "S2"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "3"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    		)
+    		(embedded_fonts no)
+    	)
+  
+        	(symbol "Device:Thermistor_NTC"
+    		(pin_numbers
+    			(hide yes)
+    		)
+    		(pin_names
+    			(offset 0)
+    		)
+    		(exclude_from_sim no)
+    		(in_bom yes)
+    		(on_board yes)
+    		(property "Reference" "TH"
+    			(at -4.445 0 90)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    			)
+    		)
+    		(property "Value" "Thermistor_NTC"
+    			(at 3.175 0 90)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    			)
+    		)
+    		(property "Footprint" ""
+    			(at 0 1.27 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "Datasheet" "~"
+    			(at 0 1.27 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "Description" "Temperature dependent resistor, negative temperature coefficient"
+    			(at 0 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "ki_keywords" "thermistor NTC resistor sensor RTD"
+    			(at 0 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(property "ki_fp_filters" "*NTC* *Thermistor* PIN?ARRAY* bornier* *Terminal?Block* R_*"
+    			(at 0 0 0)
+    			(effects
+    				(font
+    					(size 1.27 1.27)
+    				)
+    				(hide yes)
+    			)
+    		)
+    		(symbol "Thermistor_NTC_0_1"
+    			(arc
+    				(start -3.175 2.413)
+    				(mid -3.0506 2.3165)
+    				(end -3.048 2.159)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(arc
+    				(start -3.048 2.794)
+    				(mid -2.9736 2.9736)
+    				(end -2.794 3.048)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(arc
+    				(start -2.794 3.048)
+    				(mid -2.6144 2.9736)
+    				(end -2.54 2.794)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(arc
+    				(start -2.794 2.54)
+    				(mid -2.9736 2.6144)
+    				(end -3.048 2.794)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(arc
+    				(start -2.794 1.905)
+    				(mid -2.9736 1.9794)
+    				(end -3.048 2.159)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(arc
+    				(start -2.54 2.159)
+    				(mid -2.6144 1.9794)
+    				(end -2.794 1.905)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(arc
+    				(start -2.159 2.794)
+    				(mid -2.434 2.5608)
+    				(end -2.794 2.54)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy -2.54 2.159) (xy -2.54 2.794)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy -2.54 -3.683) (xy -2.54 -1.397) (xy -2.794 -2.159) (xy -2.286 -2.159) (xy -2.54 -1.397) (xy -2.54 -1.651)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type outline)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy -1.778 2.54) (xy -1.778 1.524) (xy 1.778 -1.524) (xy 1.778 -2.54)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    			(polyline
+    				(pts
+    					(xy -1.778 -1.397) (xy -1.778 -3.683) (xy -2.032 -2.921) (xy -1.524 -2.921) (xy -1.778 -3.683)
+    					(xy -1.778 -3.429)
+    				)
+    				(stroke
+    					(width 0)
+    					(type default)
+    				)
+    				(fill
+    					(type outline)
+    				)
+    			)
+    			(rectangle
+    				(start -1.016 2.54)
+    				(end 1.016 -2.54)
+    				(stroke
+    					(width 0.254)
+    					(type default)
+    				)
+    				(fill
+    					(type none)
+    				)
+    			)
+    		)
+    		(symbol "Thermistor_NTC_1_1"
+    			(pin passive line
+    				(at 0 3.81 270)
+    				(length 1.27)
+    				(name "~"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "1"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    			(pin passive line
+    				(at 0 -3.81 90)
+    				(length 1.27)
+    				(name "~"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    				(number "2"
+    					(effects
+    						(font
+    							(size 1.27 1.27)
+    						)
+    					)
+    				)
+    			)
+    		)
+    		(embedded_fonts no)
+    	)
   )
 
 
@@ -728,6 +2005,606 @@
 
 
 
+    (symbol (lib_id "Battery_Management:BQ76920PW") (at 130 80 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "3007149b-229c-4283-b75a-17423fbd5459")
+    (property "Reference" "U1" (at 130 77.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "BQ7692003" (at 130 82.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "Package_SO:TSSOP-20_4.4x6.5mm_P0.65mm" (at 130 80 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 130 80 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "U1")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:Battery_Cell") (at 175 100 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "70c378d7-7a2c-4e1a-bd14-3e09ade21b0d")
+    (property "Reference" "BT1" (at 175 97.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "18650" (at 175 102.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 175 100 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 175 100 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "BT1")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:Battery_Cell") (at 175 80 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "7a2d669a-81d5-4a0c-9db5-80db5ee89946")
+    (property "Reference" "BT2" (at 175 77.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "18650" (at 175 82.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 175 80 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 175 80 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "BT2")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:Battery_Cell") (at 175 60 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "b8ba2504-7367-4545-9c2b-933de6afb785")
+    (property "Reference" "BT3" (at 175 57.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "18650" (at 175 62.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 175 60 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 175 60 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "BT3")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:R") (at 160 100 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "ac01ab57-3d70-4fe4-a405-77c6a308a2b0")
+    (property "Reference" "R1" (at 160 97.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "100" (at 160 102.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 160 100 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 160 100 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "R1")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:R") (at 160 85 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "c901cde7-74f6-46b0-81b7-98b55cd68e29")
+    (property "Reference" "R2" (at 160 82.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "100" (at 160 87.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 160 85 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 160 85 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "R2")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:R") (at 160 70 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "53f59a13-950f-4e13-b996-92ab43582e1e")
+    (property "Reference" "R3" (at 160 67.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "100" (at 160 72.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 160 70 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 160 70 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "R3")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:R") (at 160 55 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "e9136161-c339-4c33-9acd-e0e22249a40f")
+    (property "Reference" "R4" (at 160 52.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "100" (at 160 57.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 160 55 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 160 55 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "R4")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:C") (at 195 100 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "9c13a92e-8228-4b1d-81ec-23787ece4205")
+    (property "Reference" "C1" (at 195 97.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "1nF" (at 195 102.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 195 100 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 195 100 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "C1")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:C") (at 195 85 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "54dd1698-ee81-430c-8db6-75fd237a2ff1")
+    (property "Reference" "C2" (at 195 82.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "1nF" (at 195 87.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 195 85 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 195 85 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "C2")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:C") (at 195 70 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "039efce8-3976-40f2-9645-83c9ec850503")
+    (property "Reference" "C3" (at 195 67.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "1nF" (at 195 72.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 195 70 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 195 70 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "C3")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:C") (at 195 55 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "3cf0867e-499a-4d50-bcb9-d1f668977133")
+    (property "Reference" "C4" (at 195 52.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "1nF" (at 195 57.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 195 55 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 195 55 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "C4")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Transistor_FET:FDS9926A") (at 115 130 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "64cb7dbb-b836-4d8f-9d55-e72175321b4e")
+    (property "Reference" "Q1" (at 115 127.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "DUAL_N_FET" (at 115 132.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 115 130 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 115 130 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "Q1")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:R") (at 130 145 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "901c5aa5-ccc9-497c-a6b9-83409dbcc8ad")
+    (property "Reference" "R5" (at 130 142.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "0.005" (at 130 147.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 130 145 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 130 145 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "R5")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:C") (at 125 95 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "2eef2c3d-1745-4a32-8b0d-2457d079ee2e")
+    (property "Reference" "C5" (at 125 92.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "1uF" (at 125 97.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 125 95 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 125 95 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "C5")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:C") (at 145 65 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "ca5b5fbe-26f7-4664-b2f3-3431df93b39f")
+    (property "Reference" "C6" (at 145 62.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "1uF" (at 145 67.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 145 65 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 145 65 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "C6")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:C") (at 152 65 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "293239c7-1e68-425f-be6b-ab356b51ca71")
+    (property "Reference" "C7" (at 152 62.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "100nF" (at 152 67.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 152 65 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 152 65 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "C7")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:C") (at 148 72 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "f8197fea-a60e-4d65-b536-da1e146374b0")
+    (property "Reference" "C8" (at 148 69.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "10uF" (at 148 74.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 148 72 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 148 72 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "C8")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:C") (at 154 72 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "5d31478a-dd8c-4bc4-b1f3-0ce879ced548")
+    (property "Reference" "C9" (at 154 69.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "100nF" (at 154 74.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 154 72 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 154 72 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "C9")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:R") (at 105 65 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "0bfd8e80-11d2-4f2e-9365-5926a5ca11bf")
+    (property "Reference" "R6" (at 105 62.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "10k" (at 105 67.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 105 65 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 105 65 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "R6")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:R") (at 100 65 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "d1762184-20cd-4ce4-a9e1-47d0238280f9")
+    (property "Reference" "R7" (at 100 62.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "10k" (at 100 67.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 100 65 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 100 65 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "R7")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:R") (at 105 60 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "4c53e465-0b8d-4c7b-bd52-3df38bb2e909")
+    (property "Reference" "R8" (at 105 57.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "10k" (at 105 62.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 105 60 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 105 60 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "R8")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:R") (at 110 78 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "06b58a46-2a31-4345-b08e-a6d98e94351b")
+    (property "Reference" "R9" (at 110 75.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "10k" (at 110 80.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 110 78 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 110 78 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "R9")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Device:Thermistor_NTC") (at 105 82 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "52d2f0af-ef4f-4bd3-b596-52aa6e2092d2")
+    (property "Reference" "TH1" (at 105 79.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "NTC_10k" (at 105 84.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 105 82 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 105 82 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "TH1")
+          (unit 1)
+        )
+      )
+    )
+  )
+    (symbol (lib_id "Switch:SW_Push") (at 95 90 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid "f253bca0-bc17-477c-b3ca-9cd41a5529a2")
+    (property "Reference" "SW1" (at 95 87.46 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "OFF" (at 95 92.54 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 95 90 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Datasheet" "~" (at 95 90 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (instances
+      (project "power_module"
+        (path "/befea1f9-0490-4e83-9d1c-7e2d4f4eb651"
+          (reference "SW1")
+          (unit 1)
+        )
+      )
+    )
+  )
   (sheet_instances
     (path "/" (page "1"))
   )
