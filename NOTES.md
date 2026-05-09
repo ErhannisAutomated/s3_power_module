@@ -3,33 +3,67 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
-## State at end of 2026-05-08 session
+## State at end of 2026-05-09 session
 
-- Repo initialized, 6 commits.
-- INSTRUCTIONS.md captures the spec, locked decisions, IC picks.
-- BMS subcircuit components placed (25 symbols, no wires).
-- Schematic is at `power_module.kicad_sch`; render via
-  `mcp__kicad__get_schematic_view` for visual.
+**Schematic is COMPLETE and split into hierarchical sheets.**
+The flat power_module.kicad_sch has been partitioned into:
+  - `power_module.kicad_sch` (top-level: 3 sheet blocks + J2 output
+    header + J3 I²C breakout + SW1 user switch)
+  - `bms.kicad_sch` (BMS chip + cells + protection FETs + signals)
+  - `charger.kicad_sch` (USB-C → CH224K → BQ24650 sync buck)
+  - `buckboost.kicad_sch` (LM5176 4-switch buck-boost)
 
-Last commit: `5ec7709 schematic: place BMS subcircuit components`
+Cross-sheet nets are global_label: BAT+, GND, V12_OUT, SDA, SCL,
+ALERT, MODULE_EN.
+
+ERC at top-level: 0 errors, 1 inductor-footprint warning (pending
+the LCSC pass).
+
+Today (2026-05-09) the heavy lifting was on the MCP server side —
+many fixes / new tools landed on the `fixes/improvements_2` branch:
+
+  - `add_schematic_sheet` (instantiate a hierarchical sheet block)
+  - Schematic autoplacer (force-directed; 7 MCP tools)
+  - Renderer crop+colored, sheet-bbox aware, multi-sheet picker
+  - PinLocator cache invalidation on file mtime
+  - Autorouter rule 6 (no perpendicular wire crossings)
+  - Phase 5 orphan-chain fix (label every wired chain)
+  - Auto-orientation for net labels
+  - Per-unit autoplacer node, real bbox, property text follow
+  - Standalone-friendly instances when applying placer output
+
+The schematic auto-orient labels pass was applied to all four child
+sheets so labels face outward from their pins.
 
 ## Next steps (in order)
 
-1. **Wire the BMS subcircuit.** Cell stacking, cell taps to VC0–VC3,
-   I²C labels, CHG/DSG FETs in the battery-negative path with the
-   sense resistor, REGOUT/GND distribution. Use `connect_to_net` /
-   `connect_pins` (preferred over bare wires; see workflow memory).
-   Sequential calls — see `feedback_parallel_writes.md` rule.
-2. **Build the charger subcircuit** (BQ24650RVAR + USB-C connector +
-   CH224K + charger inductor + status LED + sense resistors).
-3. **Build the buck-boost subcircuit** (LM5176 + 4 power FETs +
-   inductor + output caps + FB resistors + current sense).
-4. **Integrate**: connect subcircuits via shared nets (BAT+, BAT-,
-   GND, etc.). Add 2-pin output header, 4-pin I²C breakout header,
-   user on/off switch wiring, charge LED.
-5. **Set Footprint + LCSC** properties on every non-power component
-   (the easy-to-skip step — see workflow memory).
-6. **Sync to PCB**, layout, route, DRC, BOM.
+1. **Fix `PinLocator` multi-unit pin lookup bug.** Currently it
+   returns the first-placed instance's `(at)` for ALL pin numbers,
+   so unit-2 pins on multi-unit symbols (FDS9926A) come back at
+   wrong world coords.  Workaround in autoplacer's rewire bypasses
+   `connect_pins` for this reason; once fixed, autoplacer can
+   re-enable autorouted wires.  See `mcp_server_issues.md` for
+   details.
+
+2. **Tune the autoplacer's force constants** on the BMS sheet
+   (or a small synthetic test project — see #52 in tasks).
+   Current run produces correct connectivity but components are
+   spread too thin; want denser packing without overlap.
+
+3. **Apply the autoplacer to power_module sheets in polish mode.**
+   Low force, short anneal, on the real bms / charger / buckboost
+   sheets.  Needs to use `standalone=False` to keep the
+   hierarchical paths intact.
+
+4. **Set Footprint + LCSC** properties on every non-power
+   component (the easy-to-skip step — see workflow memory).
+
+5. **PCB layout pass on power_module** — task #54.  Shake bugs
+   out of the PCB workflow on this design before starting v2.
+
+6. **Optionally**: kick off a fresh v2 design using all the
+   tooling lessons we've accumulated (placer, sheets, label
+   orientation, etc.).
 
 ## BMS pin reference (BQ76920PW, TSSOP-20)
 
