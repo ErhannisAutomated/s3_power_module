@@ -33,9 +33,40 @@ ERC dropped 9 → 2 (the remaining 1 error is the long-standing
 PWR_FLAG/Input-Power issue; 1 warning is the global fp-lib-table not
 including `power_module_lib` — harmless, project-local lib-table has it).
 
-**Remaining for the cold-resume reader before sync:**
+**Stackup + netclasses applied (tasks #86, #87).**
 
-  - Tasks #86-#92 (stackup → sync → layout → outline → autoroute → DRC/export).
+  - 4-layer copper added: F.Cu (L1), In1.Cu (L2 = GND), In2.Cu (L3 =
+    PWR), B.Cu (L4). Verify via `grep -A 6 '(layers' power_module.kicad_pcb`.
+  - Netclasses POWER_4A (1.5 mm / 0.25 mm) and POWER_2A (0.8 mm /
+    0.2 mm) added to `power_module.kicad_pro` `net_settings.classes`
+    array with netclass_patterns assignments for BAT+, BAT-, V12_OUT
+    (POWER_4A) and USB_VBUS, CHG_OUT, BQ_PH (POWER_2A). Done via
+    direct .kicad_pro edit because both `add_net_class` and
+    `create_netclass` MCP tools are broken (one "Unknown command",
+    the other crashes on a SWIG netclasses_map.Find lookup).
+
+**sync_schematic_to_board partial — restart required (task #88).**
+
+  - First run imported only the 3 top-level footprints (J2, J3, SW1)
+    and skipped the 67 child-sheet components. Root cause:
+    `_auto_import_footprints_from_schematic` in `python/kicad_interface.py`
+    iterated only the top schematic, not the hierarchical sub-sheets.
+    Patched in `KiCAD-MCP-Server` develop branch (commit `6117986`)
+    to rglob every `.kicad_sch` and deduplicate by reference. The
+    Python subprocess inside the MCP server caches the old module, so
+    the fix needs a Claude Code restart to take effect.
+  - 56 nets are already populated on the PCB from the partial sync,
+    and the 3 top-level footprints have pad nets assigned.
+
+**Cold-resume reader next step (after restart):**
+
+  Re-run `sync_schematic_to_board` against
+  `power_module.kicad_sch` + `power_module.kicad_pcb`. The
+  hierarchical walk should pick up the 67 missing footprints and
+  assign all pad nets. Confirm via
+  `grep -c '^\t(footprint' power_module.kicad_pcb` — expect ≥70.
+  Then continue with tasks #89-#92 (layout → outline → autoroute →
+  DRC/export).
 
 ---
 
