@@ -3,6 +3,51 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-14 session (BAT+ inner pour + re-route)
+
+Two MCP-server fixes landed on `develop` this morning that materially
+affected this board:
+
+  - `add_layer` formula corrected (commit `6d438de`) — inner-layer
+    number now maps to the correct PCB_LAYER_ID (even spacing in
+    KiCad 9).  Both the silently-dropped In2.Cu pour and the stray
+    F.SilkS zone were the same bug.
+  - `export_position_file` handler implemented (commit `0141708`).
+
+PCB repair + re-route summary (commits `29491ea` + `cb8922d`):
+
+  - Renamed layer id 5 back to F.Silkscreen (was corrupted to "In2.Cu").
+  - Added BAT+ pour on In2.Cu (the real one, id 6), clearance 0.25mm.
+  - Stripped all v2 tracks/vias (379+79) and ran freerouting -mp 25
+    on the fresh 4-layer board.
+  - **BAT+ went from 218.5mm of F.Cu trace -> 15.9mm + 9 stitching
+    vias to the In2.Cu pour.**  GND likewise stitches via 34 vias to
+    the In1.Cu pour.
+  - Final state: 367 tracks + 76 vias, 2 pours filled.
+  - ~18 unrouted ratlines remain, all in the dense buck-boost area
+    (BB_HDRV1/HDRV2, BB_EN, BB_PGOOD, BMS_CHG, CHG_OUT — short single-
+    conn hops) plus 5 USB_VBUS pin-pair hops between Q2 / U2 / J1
+    VBUS pads.  Placement-limited; closing the gap needs either a
+    bigger board (110×130 mm) or manual placement refinement.
+
+Side experiment kept in repo: `power_module_planes.dsn` + `.ses`.
+Setting In1.Cu/In2.Cu to `(type power)` in the DSN drops routing from
+~80% to 40% because signals get squeezed onto F.Cu+B.Cu only.
+Documents the trade-off: 4-layer board needs ALL layers as routable
+when component density is this high.
+
+### Cold-resume reader next step
+
+Two paths:
+  1. **Close the routing gap.**  Grow board to ~110×130 mm and re-
+     place via the schematic-autoplacer-equivalent for the PCB
+     (doesn't exist yet — currently manual move_component).  Or
+     manually route the ~18 remaining ratlines via
+     `route_pad_to_pad` / `route_trace`.
+  2. **Move on to a new design** treating power_module as
+     "feasible MVP" and accepting the ~10% unrouted ratlines as a
+     workflow limit on this board.
+
 ## State at end of 2026-05-13 session (cell holder swap)
 
 **BT1-3 holder swap complete (task #93).** The three `Device:Battery_Cell`
