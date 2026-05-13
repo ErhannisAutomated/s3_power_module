@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "power_module_lib")(type "KiCad")(uri "${KIPRJMOD}/libs/power_module_lib.pretty")(options "")(descr "Project-local footprints from easyeda2kicad"))
+)

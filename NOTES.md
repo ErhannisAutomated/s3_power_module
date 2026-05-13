@@ -3,6 +3,305 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-13 session (cell holder swap)
+
+**BT1-3 holder swap complete (task #93).** The three `Device:Battery_Cell`
+symbols (BT1-3) have been replaced by a single 6-pin `power_module_lib:BH-18650-B5BA016`
+symbol named **BAT1** at (175.26, 80.01) in `bms.kicad_sch`.
+
+Pin-to-net mapping (all cells facing same direction, + on left side
+matching pad-1 polarity marker on the holder footprint):
+
+  - Pin 1 (top-left, cell-1+)   = BAT+
+  - Pin 2 (top-right, cell-1-)  = CELL2_TOP   ← tap to VC3 sense via R3/C3
+  - Pin 3 (mid-left, cell-2+)   = CELL2_TOP   ← physical PCB jumper pad 2↔3
+  - Pin 4 (mid-right, cell-2-)  = CELL1_TOP   ← tap to VC2 sense via R2/C2
+  - Pin 5 (bot-left, cell-3+)   = CELL1_TOP   ← physical PCB jumper pad 4↔5
+  - Pin 6 (bot-right, cell-3-)  = BAT-        ← VC0 reference
+
+BAT1 has Footprint + LCSC + Description set. ERC: 2 errors + 7 warnings,
+mostly pre-existing or cosmetic (easyeda2kicad symbol uses "unspecified"
+pin types → Passive/Unspecified warnings on R1-4 connections; "Pin not
+connected" likely refers to a different sheet).
+
+**J1 USB-C swap complete (task #94).** Symbol replaced
+`Connector:USB_C_Receptacle_PowerOnly_24P` → `Connector:USB_C_Receptacle_USB2.0_16P`
+on `charger.kicad_sch` at (220, 80). All 5 active nets relabeled
+(USB_VBUS, CC1, CC2, GND on connector pin, GND on SHIELD pin). The 6
+data+SBU pins (A6/B6 = D+, A7/B7 = D-, A8/B8 = SBU) carry NC markers.
+ERC dropped 9 → 2 (the remaining 1 error is the long-standing
+PWR_FLAG/Input-Power issue; 1 warning is the global fp-lib-table not
+including `power_module_lib` — harmless, project-local lib-table has it).
+
+**Remaining for the cold-resume reader before sync:**
+
+  - Tasks #86-#92 (stackup → sync → layout → outline → autoroute → DRC/export).
+
+---
+
+## State at end of 2026-05-12 session (PCB layout phase started)
+
+**Parts pass complete** for all non-cell components (67 instances).
+Footprint + LCSC + Description set on every R, C, L, IC, FET, LED,
+NTC, and J1 across `bms.kicad_sch`, `charger.kicad_sch`, and
+`buckboost.kicad_sch`.
+
+### Decisions made this session
+
+  - **Stackup**: 4-layer (GND@L2, PWR@L3). Not yet applied to .kicad_pcb.
+  - **Battery holder**: 3-cell `BH-18650-B5BA016` (LCSC C19184086,
+    Extended). Fetched via `easyeda2kicad --full --lcsc_id C19184086`
+    into `projects/power_module/libs/power_module_lib.{kicad_sym,pretty}`.
+    6-pin footprint (one pad per cell terminal). **Schematic swap of
+    BT1-3 → single holder symbol still pending** (task #93).
+  - **USB-C J1**: 16-pin physical part (TYPE-C-31-M-12, C165948).
+    Schematic still references the 24P `Connector:` symbol — KiCad
+    netlist export should still work since unused symbol pins won't
+    map to footprint pads, but ERC may warn. Cleanest fix: swap symbol
+    to `Connector:USB_C_Receptacle_USB2.0_16P`. Deferred.
+  - **R21 value**: changed 90k → 91k (E96 1% value, allows part
+    selection); buck-boost FB ratio becomes 91k:10k → Vout ≈ 12.1V
+    with the LM5176's 1.2V Vref. Acceptable for the 12V output.
+  - **Description property**: new workflow guideline — short
+    function-not-spec (<8 words, role-focused) on every component as
+    placed. Applied retroactively to all 67 components this session.
+    Refine the rule into `workflow_pcb_from_schematic.md` after the
+    full PCB pass.
+
+### Key parts (full BOM in conversation transcript)
+
+  - **Basic** (14): UNI-ROYAL 0603 resistors {100Ω, 1k, 5.1k, 10k,
+    20k, 22k, 100k}; Samsung X7R caps {1nF, 10nF, 100nF, 1µF 0805,
+    10µF 0805, 22µF 1206}; C0G 47pF 0603; Green LED 0805 (KT-0805G).
+  - **Extended** (14): 91k 0603 (R21); 0.005Ω + 0.01Ω 1206 power R;
+    6.8µH + 10µH SMD inductors (custom footprint from easyeda2kicad);
+    NTC 10k 0603; Blue LED 0805; BQ76920PWR; CH224K; BQ24650RVAR;
+    LM5176PWPR; AP9926 (FDS9926A sub) ×4 instances; USB-C 16P; 3S
+    cell holder.
+
+  Total Extended setup at JLCPCB: 14 × $3 = **$42**.
+
+### Files added this session
+
+  - `projects/power_module/fp-lib-table` — registers
+    `power_module_lib` project-local footprint library.
+  - `projects/power_module/sym-lib-table` — same for symbols.
+  - `projects/power_module/libs/power_module_lib.kicad_sym` — symbols
+    for holder + 2 inductors (from easyeda2kicad).
+  - `projects/power_module/libs/power_module_lib.pretty/*.kicad_mod`
+    — footprints for same.
+  - `projects/power_module/libs/power_module_lib.3dshapes/` — 3D
+    models.
+  - `easyeda2kicad` (pip package) installed into project venv.
+
+### Next steps (deferred from end-of-day stop)
+
+  1. **BT1-3 → holder symbol swap** (#93). Replace 3 Battery_Cell
+     symbols with one `BH-18650-B5BA016` 6-pin symbol. Wire pads
+     1,2=cell1±; 3,4=cell2±; 5,6=cell3±. Verify pad orientation from
+     datasheet at
+     https://jlcpcb.com/api/file/downloadByFileSystemAccessId/8590907619093520384
+     (cells may all face same direction per user preference).
+  2. **J1 symbol** — swap from 24P to 16P USB-C symbol so ERC stops
+     warning. Pin remapping: VBUS (A4,A9,B4,B9), GND (A1,A12,B1,B12),
+     CC1/CC2 → CH224K, D+/D- → noop or NC.
+  3. **Stackup** (#86) — configure 4-layer in `.kicad_pcb`.
+  4. **Netclasses** (#87) — POWER_4A / POWER_2A / signal default.
+  5. **sync_schematic_to_board** (#88) — imports footprints + nets.
+  6. **Layout** (#89) — `move_component` per subcircuit.
+  7. **Board outline + pours** (#90), **autoroute** (#91), **DRC +
+     BOM/Gerber export** (#92).
+
+### Where to resume
+
+If the next session starts cold: read this section, then run
+`mcp__kicad__list_schematic_components` on any of the three child
+sheets and confirm LCSC properties are present. Then start with
+either the BT1-3 holder swap (cleanest first) or jump to stackup +
+sync if you want to defer the holder until layout.
+
+## State at end of 2026-05-13 session
+
+User signed off on the autoplacer + recipe + connect_pins + diagnostics
+work as "sufficiently good for now".  Final state of the three child
+sheets:
+
+  - bms, charger, buckboost all pass `compare_netlists` against the
+    originals (every pin's named net preserved).
+  - All three pass `diagnose_chains` with 0 DUPLICATE_LABELS and
+    0 CROSS_NET.  LOOP flags remain on a handful of multi-pin chains
+    but are now legitimate small wire-graph cycles, not parallel-edge
+    artefacts.
+  - 0 unrelated-wire-crossings after the chain-aware fix to
+    `_scan_unrelated_wire_crossings` (it had been flagging two
+    segments of one labelled chain as "unrelated" because the
+    label-at-endpoint check missed labels reachable only via the
+    wire graph).
+  - Recipe output schematics at /tmp/claude-1000/autoplace_run/
+    (not in git).
+
+Open task #74 still latent: cross-net merge in
+`WireManager._break_wires_at_point`.  Reproducer at
+`tests/test_wire_manager_cross_net.py` is `xfail strict=True`; once
+the underlying defect is fixed (thread `expected_net` through
+`add_wire`, refuse cross-net splits in `_break_wires_at_point`), the
+test passes and pytest will tell you to remove the marker.
+
+### Maybe-someday: post-routing layout tightening
+
+Idea raised 2026-05-13: once a routed schematic is topologically
+valid (every pin on its target net, no cross-net merges), an
+optional polish pass could:
+
+  - Shrink wires that are now longer than they need to be (the
+    autoplacer left components farther apart than the final route
+    geometry needs).
+  - Pull components inward toward their connection centroids,
+    respecting bounding-box collisions, to reduce visual sprawl.
+  - Re-check whether any previously-disjoint chains can now be
+    bridged with a short wire after the tightening, and lay it.
+
+Constraint: must NOT alter the netlist (call `compare_netlists`
+after each pass to verify).  Pure visual / area refinement.  Not
+urgent — current output is "feasible for a human to parse".
+
+## State at end of 2026-05-12 session (part 2)
+
+User tested the morning's Phase 5 rewrite on the BMS sheet and
+reported 6 remaining issues; all 6 were confirmed via a new
+diagnostic script ``/tmp/claude-1000/claude/diagnose_chains.py``
+that enumerates chains/labels/pins per chain and flags
+``DUPLICATE_LABELS``/``CROSS_NET``/``LOOP``.
+
+Three Phase-5-side fixes landed this afternoon:
+
+1. **``use_stub_style`` now counts all this-net chains, not just
+   orphans.**  Fixes the VC3 asymmetric-labelling case where a Phase
+   3-stubbed chain coexisted with an orphan multi-pin chain that got
+   an in-line label.
+2. **Branch-stub merge guard.**  Before laying a candidate
+   perpendicular stub, walk the wire chain at the stub-end and refuse
+   any direction that would T-junction with another (disjoint) chain.
+   Fixes the REGOUT / SRP duplicate-labels-on-merged-loop case where
+   two orphan sub-chains got separate branch-stubs that bridged
+   together via the new wires.
+3. **Re-walk each chain right before labelling.**  Picks up any
+   merges/labels added by previous iterations in the same Phase 5
+   call.  Belt-and-suspenders with #2.
+
+Remaining open:
+
+- **Issue #5 (FET_MID loop)** — chain has 12 wires for 8 duplicate-
+  pad pins on Q1's two units; MST pairs include zero-distance same-
+  coord pairs (Q1u1/7 ≡ Q1u1/8) which create parallel-edge cycles.
+  Lower priority; out of scope for Phase 5.
+- **Issue #6 (VC1 + VC2 merged)** — issue #74 (cross-net merge in
+  ``WireManager.add_wire``'s ``_break_wires_at_point``).  Bigger fix
+  surface, still pending.  Phase 5's "skip chain with foreign-net
+  label" guard prevents the merge from being amplified into extra
+  labels but doesn't fix the underlying bug.
+
+Next session: have user re-run autoplacer + rewire on the BMS sheet
+(Jupyter with autoreload picks up these changes automatically), then
+diagnose again.  If clean on #2/#3/#4, take on #74.
+
+## State at end of 2026-05-12 session
+
+**Phase 5 duplicate-label bug fixed via a chain-graph rewrite.**
+- New public helper `commands.wire_connectivity.walk_wire_chain` BFSes
+  the real wire graph (T-junction aware via the existing
+  `_build_adjacency`).  Returns `WireChain` with `points`, `labels`,
+  `wire_indices`, `segments`, `free_endpoints`.  9 unit tests.
+- Phase 5 in `connection_schematic.py` rewritten on top of it.  Runs
+  AFTER Phase 3 (so Phase 3's labels are in the wire graph already).
+  Walks chains from each wired pin endpoint, dedupes by wire_indices,
+  classifies as labelled / orphan, places labels (free-endpoint
+  preferred, corner branch-stub when ≥2 orphan chains, in-line
+  fallback for single-chain pin-to-pin nets).  Defensive: skips
+  chains carrying a foreign-net label (don't compound issue #74).
+- Union-find pair-grouping and `phase3_future_labels` lookahead are
+  deleted.  Helper lives at `_phase5_label_orphan_chains` in
+  `connection_schematic.py`; placement at `_choose_label_position`
+  and `_try_branch_stub_at_corner`.
+- 4 new integration tests in `TestPhase5ChainFinder` cover T-junction
+  single-labelling, already-labelled chain non-relabelling, two-
+  disjoint-chains-each-labelled, and foreign-label skip.
+
+**Issue #74 fixed 2026-05-13.**  `WireManager.add_wire` and
+`add_polyline_wire` now take an optional `expected_net=` argument.
+When set, `_break_wires_at_point` and `_existing_endpoints_on_segment`
+walk the existing wire's chain via `walk_wire_chain` and refuse to
+split it if any chain label is foreign (not `expected_net`).  All
+`connect_pins` / `connect_to_net` / Phase 5 / `add_schematic_net_label`
+call sites pass the expected net.  Default `None` preserves the old
+behavior.  See `tests/test_wire_manager_cross_net.py`.
+
+Test the new code on the BMS sheet by pushing the failing schematic
+to `/tmp/work_kicad/work.kicad_sch` and re-running connect_pins(auto)
+on the previously-doubled-label nets (FET_MID, REGOUT, VC3).
+
+## State at end of 2026-05-10 session
+
+**The autoplacer + connect_pins(auto) work has been the focus.** A
+long chain of improvements landed today on `fixes/improvements_2`,
+listed roughly in commit order:
+
+  - PinLocator multi-unit lookup, wire splits at existing endpoints,
+    add_schematic_net_label always-stub, astar-tee run-out fix.
+  - Pin-aware attraction + multi-pass snap_positions with pin-coord
+    safety check (catches duplicate-pad collisions and stub-end-on-
+    pin-endpoint between different ref+unit combos).
+  - Stub-zone reservation in routing (rule 7), preserve no_connects,
+    centre placement on A4 page.
+  - MST-ordered pair wiring (commit `89c05c5`) — fixes split-chain
+    issues like REGOUT.
+  - Adaptive max_len in rewire_session — scaled with placement
+    diagonal, fixes routes around big ICs (commit `c9eb506`).
+  - Phase 5 branch-stub for multi-orphan nets only; otherwise in-line
+    label.  Two-pass with future-Phase-3-labels lookahead (commits
+    `0ff4efb`, `fab22f9`).
+  - Polarity force rendered separately in viz.  New polarity_torque
+    force rotates GND pins down, V+ pins up.  Pin-orientation torque
+    skips power nets.  Routing _build_grid_obstacles now unblocks the
+    cell ONE STEP outward of each pin endpoint so routes can approach
+    pins whose component bbox extends past the pin.
+  - Autoplacer real-time visualizer (`commands/autoplacer_viz.py`):
+    matplotlib-based; bbox + pins + force overlays.  Runs in iPython
+    or Jupyter Lab via `%matplotlib qt5` / `%matplotlib widget`.
+
+**Outstanding issues for Monday (2026-05-11)**:
+
+The user has been visually inspecting the autoplacer output and
+observed two remaining problems on the BMS sheet:
+
+  1. **Some duplicate labels persist** despite the Phase 5 future-
+     Phase-3-labels lookahead.  Hypothesis: the union-find chain-
+     grouping in Phase 5 uses wired_pairs' segment endpoints, which
+     don't reflect mid-segment wire splits done by sync_junctions /
+     `_break_wires_at_point`.  Two pairs whose wires connect via a
+     T-junction (one's endpoint on another's interior) end up in
+     separate chain groups, each getting its own auto-label.
+
+  2. **At least one instance of separate nets being merged.**
+     Hypothesis: WireManager.add_wire's `_break_wires_at_point`
+     splits any existing wire whose interior contains the new wire's
+     endpoint, regardless of net.  After the split, sync_junctions
+     adds a junction → KiCad's wire graph treats both nets as
+     connected.  The spurious-connection guard (rule 3) is supposed
+     to catch this BEFORE the wire is added, but may have a gap.
+
+Reference file: `/tmp/work_kicad/work.kicad_sch` is the user's last
+test-run output, kept for the Monday session.
+
+**Plan for Monday** (see tasks #73, #74, #75):
+  - Build a `walk_wire_chain(start_pt, schematic_path) -> Set[Point]`
+    helper that BFSes the actual wire graph in the file, accounting
+    for splits and junctions.  This is the foundation for both fixes.
+  - Use it to fix Phase 5 chain grouping (issue #1).
+  - Audit the spurious-connection guard for gaps that allow cross-
+    net merging via wire splits (issue #2).  Possibly tighten
+    `_break_wires_at_point` to refuse cross-net splits.
+
 ## State at end of 2026-05-09 session
 
 **Schematic is COMPLETE and split into hierarchical sheets.**
