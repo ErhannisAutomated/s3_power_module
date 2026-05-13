@@ -15,13 +15,13 @@
       )
     )
     (layer In1.Cu
-      (type signal)
+      (type power)
       (property
         (index 1)
       )
     )
     (layer In2.Cu
-      (type signal)
+      (type power)
       (property
         (index 2)
       )
