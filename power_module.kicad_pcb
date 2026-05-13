@@ -515,7 +515,6 @@
 			)
 		)
 	)
-)
 	(footprint "Resistor_SMD:R_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "0b6cf3c6-1355-4f9e-b029-e93d6612c0d1")
@@ -3675,7 +3674,6 @@
 			)
 		)
 	)
-
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "38d030bc-e49e-446a-8e9c-a419b77a30b1")
@@ -3939,7 +3937,6 @@
 			)
 		)
 	)
-
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "39bf6e2e-24a6-45dd-b831-13f88a2ccd11")
@@ -5504,7 +5501,6 @@
 			)
 		)
 	)
-)
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "5a9f2238-6903-4dfb-acdf-f6c3562a9ed6")
@@ -6297,7 +6293,6 @@
 			)
 		)
 	)
-
 	(footprint "Resistor_SMD:R_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "64de2029-b387-4220-a98a-5fd430c95fad")
@@ -8853,7 +8848,6 @@
 			)
 		)
 	)
-
 	(footprint "Resistor_SMD:R_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "a27c99c2-aaea-4346-89a6-acf4f81f4588")
@@ -10364,7 +10358,6 @@
 			)
 		)
 	)
-)
 	(footprint "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12"
 		(layer "F.Cu")
 		(uuid "b4aa3937-3a02-4315-83ae-0c5ed19589bf")
@@ -16627,5 +16620,5 @@
 		(layer "Edge.Cuts")
 		(uuid "f1dbb717-9919-46be-9c8e-ebc1587e8b0d")
 	)
-(embedded_fonts no)
+	(embedded_fonts no)
 )
