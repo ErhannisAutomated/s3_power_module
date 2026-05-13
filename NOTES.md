@@ -70,6 +70,63 @@ including `power_module_lib` — harmless, project-local lib-table has it).
 
 ---
 
+## State at end of 2026-05-13 session 2 (PCB layout + autoroute)
+
+PCB layout, pours, and a first autoroute pass are now committed.
+The board is at 95×110 mm rounded rectangle with all 71 footprints
+placed (`apply_positions.py` script kept in repo for direct-rewrite
+recovery if MCP write paths diverge again).
+
+Stackup applied:
+  - L1 F.Cu — signal routing
+  - L2 In1.Cu — GND pour (the working one)
+  - L3 In2.Cu — BAT+ pour did NOT persist; layer-duplicate bug in
+    `add_layer` / `get_layer_list` corrupts persistence. Deferred.
+  - L4 B.Cu — signal routing only (no pour; the original B.Cu GND
+    pour was occluding signal routes and was stripped before v2
+    autoroute)
+
+Autoroute v1 (8 passes): 412 tracks + 74 vias, 66/184 nets still
+unrouted.
+
+Autoroute v2 (20 passes, after iteration): 379 tracks + 79 vias.
+Slightly worse — placement density is the real ceiling here. 34
+via_dangling errors in DRC indicate incomplete routes.
+
+**Three more MCP-server bugs fixed in develop this session:**
+
+  - `sync_schematic_to_board` auto-import skipped hierarchical
+    sub-sheets (commit `6117986`).
+  - `place_component(boardPath=…)` rebuilt ComponentCommands,
+    invalidating the `move_component` dispatch reference so writes
+    silently went to an orphaned BOARD instance (commit `b8183d8`).
+  - `autoroute` was missing from longRunningCommands so its 30s
+    timeout killed any non-trivial run (commit `c990d48`).
+  - `export_bom` didn't walk hierarchical sub-sheets — BOM had only
+    3 parts instead of 71 (commit `eca569a` — needs MCP restart to
+    take effect).
+
+**Cold-resume reader next step:**
+
+  1. MCP restart.
+  2. `mcp__kicad__export_bom(schematicPath=...kicad_sch,
+     outputPath=power_module_bom.csv, format=CSV,
+     includeAttributes=[LCSC, Description])` — confirm row count
+     is 28 (28 unique BOM lines from 71 instances).
+  3. `mcp__kicad__export_gerber(outputDir=gerber/,
+     generateDrillFiles=true, generateMapFile=true)`.
+  4. `mcp__kicad__export_position_file(outputPath=pos.csv,
+     format=CSV, units=mm)`.
+  5. Commit `gerber/`, `power_module_bom.csv`, `pos.csv`. Tag #92
+     completed.
+
+The autoroute coverage gap (62-64%) is best closed in a later
+session by either (a) growing the board to ~110×130 mm and re-
+placing, or (b) doing manual placement informed by a ratsnest view.
+Not a workflow blocker — the demo end-to-end has been exercised.
+
+---
+
 ## State at end of 2026-05-12 session (PCB layout phase started)
 
 **Parts pass complete** for all non-cell components (67 instances).
