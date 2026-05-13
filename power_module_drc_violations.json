@@ -1,0 +1,402 @@
+{
+  "board": "/home/vagrant/projects/kicad_agent/projects/power_module/power_module.kicad_pcb",
+  "timestamp": "2026-05-13T03:40:56+0000",
+  "total_violations": 38,
+  "violation_counts": {
+    "annular_width": 1,
+    "clearance": 10,
+    "shorting_items": 4,
+    "courtyards_overlap": 10,
+    "padstack": 1,
+    "silk_over_copper": 4,
+    "solder_mask_bridge": 4,
+    "silk_overlap": 4
+  },
+  "severity_counts": {
+    "error": 29,
+    "warning": 9,
+    "info": 0
+  },
+  "violations": [
+    {
+      "type": "annular_width",
+      "severity": "error",
+      "message": "Annular width (board setup constraints min annular width 0.1000 mm; actual 0.0000 mm)",
+      "location": {
+        "x": -16.0,
+        "y": -105.85,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (netclass 'POWER_2A' clearance 0.2000 mm; actual 0.1500 mm)",
+      "location": {
+        "x": 32.8875,
+        "y": -156.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)",
+      "location": {
+        "x": 32.8875,
+        "y": -155.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)",
+      "location": {
+        "x": 32.8875,
+        "y": -154.5,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)",
+      "location": {
+        "x": 37.1125,
+        "y": -154.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (netclass 'POWER_2A' clearance 0.2000 mm; actual 0.1500 mm)",
+      "location": {
+        "x": 37.1125,
+        "y": -154.5,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (netclass 'POWER_2A' clearance 0.2000 mm; actual 0.1500 mm)",
+      "location": {
+        "x": 37.1125,
+        "y": -155.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)",
+      "location": {
+        "x": 37.1125,
+        "y": -155.5,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (netclass 'POWER_4A' clearance 0.2500 mm; actual 0.0250 mm)",
+      "location": {
+        "x": 64.175,
+        "y": -65.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (netclass 'POWER_4A' clearance 0.2500 mm; actual 0.0250 mm)",
+      "location": {
+        "x": 64.225,
+        "y": -95.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (netclass 'POWER_4A' clearance 0.2500 mm; actual 0.2000 mm)",
+      "location": {
+        "x": 51.4625,
+        "y": -154.25,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "shorting_items",
+      "severity": "error",
+      "message": "Items shorting two nets (nets GND and CELL1_TOP)",
+      "location": {
+        "x": 62.525,
+        "y": -81.905,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "shorting_items",
+      "severity": "error",
+      "message": "Items shorting two nets (nets BB_LDRV2 and CELL1_TOP)",
+      "location": {
+        "x": 62.525,
+        "y": -80.635,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "shorting_items",
+      "severity": "error",
+      "message": "Items shorting two nets (nets BB_SW2 and CELL1_TOP)",
+      "location": {
+        "x": 62.525,
+        "y": -79.365,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "shorting_items",
+      "severity": "error",
+      "message": "Items shorting two nets (nets BB_HDRV2 and CELL1_TOP)",
+      "location": {
+        "x": 62.525,
+        "y": -78.095,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "courtyards_overlap",
+      "severity": "error",
+      "message": "Courtyards overlap",
+      "location": {
+        "x": 50.0,
+        "y": -65.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "courtyards_overlap",
+      "severity": "error",
+      "message": "Courtyards overlap",
+      "location": {
+        "x": 5.0,
+        "y": -95.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "courtyards_overlap",
+      "severity": "error",
+      "message": "Courtyards overlap",
+      "location": {
+        "x": 20.0,
+        "y": -65.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "courtyards_overlap",
+      "severity": "error",
+      "message": "Courtyards overlap",
+      "location": {
+        "x": 20.0,
+        "y": -95.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "courtyards_overlap",
+      "severity": "error",
+      "message": "Courtyards overlap",
+      "location": {
+        "x": 5.0,
+        "y": -80.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "courtyards_overlap",
+      "severity": "error",
+      "message": "Courtyards overlap",
+      "location": {
+        "x": 5.0,
+        "y": -65.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "courtyards_overlap",
+      "severity": "error",
+      "message": "Courtyards overlap",
+      "location": {
+        "x": 35.0,
+        "y": -95.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "courtyards_overlap",
+      "severity": "error",
+      "message": "Courtyards overlap",
+      "location": {
+        "x": 35.0,
+        "y": -65.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "courtyards_overlap",
+      "severity": "error",
+      "message": "Courtyards overlap",
+      "location": {
+        "x": 50.0,
+        "y": -95.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "courtyards_overlap",
+      "severity": "error",
+      "message": "Courtyards overlap",
+      "location": {
+        "x": 50.0,
+        "y": -80.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "padstack",
+      "severity": "warning",
+      "message": "Padstack is questionable (PTH pad hole leaves no copper)",
+      "location": {
+        "x": -16.0,
+        "y": -105.85,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "silk_over_copper",
+      "severity": "warning",
+      "message": "Silkscreen clipped by solder mask",
+      "location": {
+        "x": 65.0,
+        "y": -96.43,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "silk_over_copper",
+      "severity": "warning",
+      "message": "Silkscreen clipped by solder mask",
+      "location": {
+        "x": 65.0,
+        "y": -82.56,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "silk_over_copper",
+      "severity": "warning",
+      "message": "Silkscreen clipped by solder mask",
+      "location": {
+        "x": 65.0,
+        "y": -77.44,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "silk_over_copper",
+      "severity": "warning",
+      "message": "Silkscreen clipped by solder mask",
+      "location": {
+        "x": 62.3,
+        "y": -82.465,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Front solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 62.525,
+        "y": -81.905,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Front solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 62.525,
+        "y": -80.635,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Front solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 62.525,
+        "y": -79.365,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Front solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 62.525,
+        "y": -78.095,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "silk_overlap",
+      "severity": "warning",
+      "message": "Silkscreen overlap",
+      "location": {
+        "x": 58.8,
+        "y": -51.6,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "silk_overlap",
+      "severity": "warning",
+      "message": "Silkscreen overlap",
+      "location": {
+        "x": 5.0,
+        "y": -51.83,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "silk_overlap",
+      "severity": "warning",
+      "message": "Silkscreen overlap",
+      "location": {
+        "x": 35.0,
+        "y": -51.68,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "silk_overlap",
+      "severity": "warning",
+      "message": "Silkscreen overlap",
+      "location": {
+        "x": 58.8,
+        "y": -51.6,
+        "unit": "mm"
+      }
+    }
+  ]
+}
