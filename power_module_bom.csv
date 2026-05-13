@@ -1,0 +1,4 @@
+value,footprint,quantity,references,LCSC,Description
+OUTPUT,Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical,1,J2,,
+I2C_BREAKOUT,Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical,1,J3,,
+ON_OFF,Button_Switch_SMD:SW_SPDT_PCM12,1,SW1,,
