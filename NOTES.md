@@ -3,6 +3,67 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-14 afternoon session (rotation fix + v6 re-route)
+
+Three big things fixed today after the user's visual inspection
+caught the pad orientation issue:
+
+  1. **Pad rotation repair.** `apply_positions.py` from yesterday
+     rewrote `(at X Y rot)` lines on 57 of 71 footprints without
+     touching per-pad local rotations.  Pad POSITIONS rotated
+     correctly but pad SHAPES rendered in the library-default
+     orientation.  J1's 16 SMD pads stacked vertically on top of
+     each other; U4's HTSSOP-28 pad rows pointed into the body;
+     same on Q1-4 (SO-8).  Fix: for each rotated footprint, call
+     `pad.SetOrientationDegrees(fp.GetOrientation())`.  See
+     `fix_pad_rotations.py` archived in the project dir.  Almost
+     certainly the real reason yesterday's autoroute capped at ~64%.
+
+  2. **Layout corrections.**  J1 (USB-C) rotated +180° so the
+     receptacle opening faces the board edge and pins face inward.
+     J2 & J3 (pin headers) rotated +90° so the pin row runs along
+     X instead of running off the y=110 board edge.  BAT1 flipped
+     to back layer + DNP (user has the physical part).  See
+     `fix_orientations_and_bat.py`.
+
+  3. **C24 placement.**  C24 was placed inside L2's bbox at
+     (62, 80); moved to (58.5, 80) in the 5 mm gap between C15 and
+     L2.  Fixed the 3 shorting_items DRC errors from v4/v5.
+
+v6 routing result:
+  - 616 tracks + 117 vias, 20 unrouted ratlines, 0 shorts,
+    0 solder_mask_bridges.
+  - Freerouting completed in 2:54 (vs 13:52 for v3) — pad shapes
+    now correct, no shape-mismatch retries.
+  - 13 clearance violations remain: 7 intra-package (U2/U3 QFN
+    pitch vs netclass default; tune netclass), 6 component-
+    to-component (R1/R12 etc, placement nudges).
+  - Cosmetic silk_overlap (60) and silk_over_copper (35) are
+    follow-up cleanup, not blockers.
+
+Open process gotcha logged to mcp_server_issues memory: MCP caches
+`self.board` and an out-of-band file edit (via direct pcbnew Python)
+isn't visible to subsequent MCP calls until `open_project` is
+re-called.  Caught us on v5.
+
+## V2 idea backlog
+
+  - **Dedicated IC overheat thermistor** near U3 (BQ24650 charger)
+    and U4 (LM5176 buck-boost).  Both ICs have internal thermal
+    shutdown but no externally readable temperature.  A 10k 0603
+    NTC near each, biased into a BMS spare ADC pin or a dedicated
+    µC pin (V2 design likely includes a host µC), would give
+    host-visible temperature monitoring.  User has thermistor stock
+    on hand.  Note 2026-05-14.
+  - **JLCPCB header rotation offset.**  Kicad's pin-header
+    footprints and JLCPCB's pick-and-place orientation disagree by
+    90° (or sometimes 180°).  When generating CPL for assembly,
+    pin headers need a rotation correction — either via a
+    documented per-part offset table during BOM/CPL upload, or by
+    using JLCPCB-specific footprints with the correction baked in.
+    Doesn't affect the schematic / PCB layout, only the assembly
+    upload step.
+
 ## State at end of 2026-05-14 session (BAT+ inner pour + re-route)
 
 Two MCP-server fixes landed on `develop` this morning that materially
