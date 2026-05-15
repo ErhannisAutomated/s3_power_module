@@ -3,6 +3,115 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-15 session (v11c — GND-last + BAT1 fork-vias)
+
+Current PCB state: **v11c (commit b0f7111)** — autorouted with the new
+MCP autoroute `layerOrder` default for 4-layer boards
+(`[F.Cu, B.Cu, In2.Cu, In1.Cu]`, "GND-last"), then 6 BAT1 cell-terminal
+pads fortified with fork-multi-via.
+
+DRC: **0 errors, 5 unconnected items**. The 5 are the residual hard
+cases:
+  - BAT+ at U4 (two F.Cu track stubs near U4 pads 2-3 not joined)
+  - BQ_PH U3-14 → Q2-1 (U3 QFN 0.5mm-pitch escape blocked)
+  - CHG_OUT U3-10 → L1-2 (same QFN escape problem)
+  - USB_VBUS J1-A9 → J1-A4 (USB-C dual-row jumper)
+  - CC1 U2-7 → J1-A5 (regressed under the new layer order; was
+    routed in v10)
+
+Plane-cut audit: **439 mm / 54 segments** (vs v9's 912 mm / 99 — 52%
+reduction). Better still, the layer balance shifted: In1.Cu/GND only
+~68 mm cut, with most signals on In2.Cu/PWR — preserving the GND
+image-current return path where it matters most.
+
+BAT1 connectivity: all 6 cell-terminal pads now connect through two
+through-vias inside the pad (the pad itself is the "bubble"), bridged
+on In1.Cu with a 1.5 mm POWER_4A trace; the existing freerouting
+signal becomes the "1 trace out". BAT- pad had one via removed because
+it shorted to an F.Cu GND track at (9, 64.05); BAT- currently runs on
+single-via to inner — followup work to add a parallel via at a
+clear offset (~62.75 mm y).
+
+### MCP server work shipped today
+
+On the develop branch of KiCAD-MCP-Server:
+
+  - **`autoroute` / `export_dsn` `layerOrder` param** (commit `88fad7f`),
+    with the GND-last default applied automatically to 4-layer boards.
+    DSN rewrite helper has 8 unit tests. Verified end-to-end on this
+    board.
+  - **`audit_plane_cuts` MCP tool** (commit `7966e6f`) — reports
+    inner-layer signal-trace lengths per net, sorted, to pick ripup
+    candidates.
+  - **`delete_trace` SWIG corruption — root cause + fix** (commit
+    `5fc25b3`). `BOARD.Remove(item)` corrupts process-global SWIG
+    state after ~650 calls; `BOARD.RemoveNative(item)` is the
+    in-process-safe alternative. Switched 5 call sites (4 in
+    delete_trace, 1 in delete_component). Subprocess workaround
+    from earlier in the session deleted.
+  - **`open_project` SETTINGS_MANAGER cache fix** (commit `0f3fb93`)
+    — out-of-band .kicad_pro edits now take effect on re-open.
+  - **`route_pad_to_pad` obstacle check** (commit `902e7da`) —
+    refuses to straight-line through foreign-net copper.
+  - **`get_nets_list includeStats`** implementation (same commit).
+  - **schema discoverability** — `query_traces includeVias`,
+    `delete_trace net="*"` documented (commit `902e7da`).
+  - **python tool_schemas.py sync** (commit `2f6b8f1`).
+  - **docs/PCB_DESIGN_WORKFLOW.md** updated with the
+    `route_pad_to_pad` straight-segment / obstacle warning (same).
+  - **CHANGELOG.md** has dated entries for every commit on
+    `develop` since 2026-05-13.
+
+### Tomorrow's starting point
+
+User wants to start with **the decoupling-audit + place_near tools**
+per the design agreed in
+[[feedback-placement-constraints-design]]:
+
+  1. **`decoupling_audit`** — walk the schematic, identify cap↔IC
+     power-pin associations by net (a cap with one pad on an IC's
+     VCC/VIN-class pin and the other on GND), compare to current PCB
+     positions, flag any cap > N mm from its IC pin.
+  2. **`place_near`** — `place_near(refs, target_ref_or_pad,
+     max_dist)` — places the listed components in free space within
+     N mm of the target, respecting bbox collisions.
+  3. **`Placement_Anchor`** property support — read from
+     `.kicad_sch` (schematic-resident, per the agreed design);
+     audit emits unresolved references as warnings.
+  4. **Rename propagation** — any tool that renames a schematic
+     component should scan all `Placement_Anchor` values and update
+     refs accordingly; report dangling refs.
+  5. Add `mcp_constraint_version: 1` to `.kicad_pro` for the
+     property-value format.
+
+Concrete first target on power_module: **C9** (100 nF, U1 BAT-pin
+decoupling) is at (25, 80) but U1 is at (17, 62) — ~20 mm away.
+Per the BMS pin reference in this NOTES file, C9 should sit near
+U1's pin 10 / 9 (BAT / REGSRC).
+
+### Still-open thread (low priority)
+
+  - File an upstream KiCad GitLab issue for the `BOARD.Remove(item)`
+    SWIG corruption — root cause documented in MCP commit `5fc25b3`
+    and `mcp_server_issues.md`. A minimal-repro Python script is in
+    `KiCAD-MCP-Server/tests/test_remove_native_does_not_corrupt.py`.
+  - Add a parallel BAT- via at (6.35, 62.75) (current-sharing for the
+    BAT- net, which is single-via on this board).
+  - 5 residual unrouted nets above — most are placement-limited.
+
+### Quick orientation for cold-resume
+
+```
+git -C ~/projects/kicad_agent/projects/power_module log --oneline -8
+git -C ~/projects/kicad_agent/KiCAD-MCP-Server log --oneline -10
+```
+
+The PCB is in a good clean state (0 DRC errors). Don't strip and
+re-route casually — the BAT1 fork-via fixes are hand-applied on top of
+the v11 autoroute output and would be lost. If a re-route IS needed,
+re-apply the BAT1 fork-via pattern (script-worthy at this point —
+candidate for a `restore_bat1_vias` helper).
+
 ## State at end of 2026-05-14 afternoon session (rotation fix + v6 re-route)
 
 Three big things fixed today after the user's visual inspection
