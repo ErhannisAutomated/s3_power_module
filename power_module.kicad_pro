@@ -347,5 +347,6 @@
       "power_module.kicad_sch"
     ]
   ],
-  "text_variables": {}
+  "text_variables": {},
+  "mcp_constraint_version": 1
 }

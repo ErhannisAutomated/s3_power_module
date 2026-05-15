@@ -3,6 +3,64 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-16 session (placement-constraint v1 landed)
+
+**Tooling shipped on the MCP `develop` branch:**
+
+  - `decoupling_audit` — walks the schematic for cap↔IC power-pin pairs
+    (auto OR explicit `Placement_Anchor`), measures PCB pad-to-pad
+    distance, flags primaries > `within=Nmm`. Per-cap, the closest
+    target is "primary"; others on a shared rail are "secondary"
+    (reported but not flagged).
+  - `place_near(refs, target, maxDist)` — snaps PCB footprints to
+    within N mm of a pad/footprint via a polar-grid search; honors
+    bbox collisions on the same layer; uses silk-excluded bbox.
+  - `Placement_Anchor` schematic property + rename propagation via
+    `edit_schematic_component(newReference=…)` and
+    `annotate_schematic`. Property grammar:
+    `<REF>[.<PIN>]/within=<N>mm[; ...]`.
+  - `mcp_constraint_version: 1` in `.kicad_pro` (added on demand by
+    constraint-aware tools).
+
+**Applied to power_module (this commit):**
+
+  - Schematic-side anchor: C9 in bms.kicad_sch carries
+    `Placement_Anchor = "U1.9/within=3mm"` (intent recorded).
+  - `power_module.kicad_pro` has `mcp_constraint_version: 1`.
+  - **PCB position unchanged** — moving C9 with `place_near` did work
+    (verified: 25,80 → 14.66,67.23, audit went from `too_far` to `ok`
+    at 2.24 mm) but stripped routing on BAT+ / GND, taking DRC from
+    0 errors → 5 (2 track_dangling, 2 shorting_items, 1 hole_clearance).
+    Reverted the .kicad_pcb. The actual placement+rerouting is a
+    follow-up: run `place_near` again, then `delete_trace(net="BAT+")`
+    + `delete_trace(net="GND")` for stubs around the old C9 spot,
+    then re-autoroute.
+
+**Audit current state (this commit):**
+
+  - 13 primary "too_far" decoupling pairs flagged (C9 explicit + 12
+    auto-discovered): C9→U1.9 (18.48mm), C8→U1.9 (7.01mm),
+    C6→U1.8 (5.16mm), C7→U1.8 (10.72mm), C25/C26→U4.23,
+    C10/C11/C16/C17→U2.1 / U3.1, C15/C27/C28→U4.2. All useful
+    candidates for placement nudges.
+
+### Next-session resume
+
+The natural next step is the "actually fix the placement" pass:
+
+  1. Decide which decoupling caps to anchor explicitly (the 13 too_far
+     primaries are all candidates; some may not be worth fixing if
+     they'd require restructuring routing too much).
+  2. For each: set `Placement_Anchor` on the schematic, run
+     `place_near`, strip the affected nets, re-autoroute.
+  3. Re-run `decoupling_audit`; verify primary too_far count drops.
+
+Alternative path: keep going on the layout in general (the 5 residual
+unconnects from v11c are mostly QFN-pitch escape problems —
+placement-limited; addressing them would also help here).
+
+---
+
 ## State at end of 2026-05-15 session (v11c — GND-last + BAT1 fork-vias)
 
 Current PCB state: **v11c (commit b0f7111)** — autorouted with the new
