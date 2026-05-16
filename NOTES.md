@@ -3,6 +3,56 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-16 session 6 (find_via_lane v4 + via clearance)
+
+**MCP tooling shipped** (KiCAD-MCP-Server `develop`):
+
+  - **`find_via_lane` via-clearance check (task #155, commit
+    `a2526ea`).** New `_via_clearance_violations` helper + new
+    `minClearance` param (default 0.15 mm). After via1/via2 are
+    chosen, both are validated against all foreign-net copper on
+    every copper layer the through via touches. Refuses with
+    `via_clearance_violation` strategy + per-via violation list
+    (with per-element gap in mm). Verified on the CHG_OUT U3.10
+    case from session 5: now catches the 0.046 mm gap to pad
+    U3-11 that would have shorted.
+  - **`find_via_lane` v4 Strategy G — 4-corner Z-shape (task
+    #153, commit `26e9c64`).** When via1/via2 straddle a blocker
+    and Strategy F's L-shape east/west legs hit secondary
+    obstacles, Strategy G tries 4 bbox corners × 2 patterns
+    (HVHV + VHVH) = 8 candidate 4-segment Z-shapes. Verified on
+    C26 BB_VCC: Strategy G finds the NE-corner HVHV Z (north of
+    BB_BOOT2 → east → south → west to via2) — same shape NOTES
+    had documented as the workable hand-route.
+
+**C26 status update**: Strategy G finds the right SHAPE for C26
+but #155's via-clearance check (correctly) catches that via1 is
+0.13 mm from BB_BOOT2 — too close even before the Z-shape
+detour begins. Resolving this needs **Strategy H "via re-walk"**
+(filed as task #156): when clearance fails, walk via1/via2
+further from source/target until clearance passes. Until #156,
+C26 still needs GUI hand-routing with a deliberately longer
+F.Cu stub from C26.1 going further south past BB_HDRV1.
+
+**PCB unchanged this session** (pure tooling work). DRC still at
+baseline: 5 unconnected_items, 0 shorts, 0 dangling.
+
+**Tasks closed this session**: #153 (Strategy G), #155 (via
+clearance), #154 already closed earlier in the day.
+
+**Tasks queued**: #156 (Strategy H — via re-walk on clearance
+failure), #136 (apply_positions safe wrapper, low priority).
+
+**Next-session top of queue**:
+
+  1. **Strategy H** (task #156) — ~30 min. Would close C26
+     automatically end-to-end through find_via_lane.
+  2. **C26 hand-route in GUI** if Strategy H isn't desired —
+     ~5 min, deterministic.
+  3. **CHG_OUT, BQ_PH** — still need GUI hand-routing for the
+     0.5 mm-pitch QFN area; tooling won't help here without a
+     much bigger pin-pitch-aware router.
+
 ## State at end of 2026-05-16 session 5 (get_component_pads layers + CHG_OUT scout)
 
 **MCP tooling shipped** (KiCAD-MCP-Server `develop`):
