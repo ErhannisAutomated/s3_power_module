@@ -3,6 +3,70 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-16 session 8 (netclass cleanup + DRC width rule)
+
+**Trace-width audit triggered by user observation that battery
+traces looked oversized in some places and under-sized in others.**
+
+Findings:
+
+  - Project ALREADY had POWER_4A (1.5mm) and POWER_2A (0.8mm)
+    netclasses correctly defined. Assignments existed for BAT+,
+    BAT-, V12_OUT, USB_VBUS, CHG_OUT, BQ_PH.
+  - **CELL1_TOP and CELL2_TOP were NOT in any netclass** → fell
+    to Default (0.2mm). They carry the same 4A as BAT+/BAT-
+    through the 3-cell series stack. 0.2mm at 4A external ≈
+    80°C+ temperature rise — well past safe.
+  - 8 long B.Cu power-carrying traces affected (35.87mm, 29.59mm,
+    24.88mm, 24.63mm, etc.).
+
+**Shipped** (power_module main commit `1ada0ab`):
+
+  - Added `CELL1_TOP` and `CELL2_TOP` to POWER_4A netclass_patterns
+    in `.kicad_pro`. Future routes get 1.5mm by default.
+  - Created `power_module.kicad_dru` with custom rules:
+    - `POWER_4A min track width` ≥ 1.0mm
+    - `POWER_2A min track width` ≥ 0.5mm
+    DRC now fires 28 `track_width` violations — the top 8 by length
+    are the real problem (long B.Cu power traces); the rest are
+    short F.Cu IC-pin/sense connections (BMS cell-voltage taps)
+    that are intentionally narrow and can be marked as DRC
+    exclusions individually in pcbnew if desired.
+
+**Deferred** — in-place widening of the existing 8 power traces
+failed: 1.5mm width caused 7 short/clearance violations (GND
+stitching vias and parallel BAT+/ALERT traces sit in the path).
+Requires re-routing the CELL_TOP B.Cu chain with re-positioned
+stitching vias and possibly relocating ALERT signal routing — a
+layout-level re-work. The DRC rule keeps the issue visible until
+this happens.
+
+**MCP fix shipped** (develop commit `51604f5`): `modify_trace`
+now accepts both `traceUuid` (TS schema name, matching
+delete_trace) and `uuid` (legacy). Surfaced when trying to widen
+via MCP; same B2-style mismatch as the get_pad_position fix
+earlier today.
+
+**PCB DRC state after this session**:
+  - 5 unconnected (baseline, unchanged)
+  - 0 shorts, 0 clearance
+  - 28 NEW track_width violations (real diagnostic — pre-existing
+    issue, now visible)
+  - 99 silk + 2 lib_footprint_mismatch (baseline)
+
+**Tasks closed this session**: #157 (netclass), #158 (widen,
+deferred-with-rationale), #159 (DRC rule).
+
+**Next-session top of queue**:
+
+  1. **CELL_TOP B.Cu re-route at 1.5mm** — needs layout-level
+     re-work (move GND stitching vias, reroute ALERT). Bigger
+     project; could be ~1-2 hour focused session.
+  2. **CHG_OUT, BQ_PH** — GUI hand-routing on tight QFN area.
+  3. **C26** — layout decision (move C26 or hand-route F.Cu detour).
+  4. **USB_VBUS C17** — easy fix found earlier this session
+     (2-segment around C17.2 GND pad); not yet applied.
+
 ## State at end of 2026-05-16 session 7 (Strategy H + C26 structural verdict)
 
 **MCP tooling shipped** (KiCAD-MCP-Server `develop`):
