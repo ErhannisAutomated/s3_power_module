@@ -34,13 +34,22 @@ can pick up from a cold start (after Claude Code context compaction).
     MCP tool (see `/tmp/claude-1000/mcp_tooling_notes_2026-05-18.md`).
 
 **Final DRC state:**
-  - 6 unconnected_items (5 pre-existing baseline: U4.2/U4.3 BAT+ pair
-    needs trunk connection, BQ_PH stub, CHG_OUT stub, USB_VBUS C17,
-    USB_VBUS J1; plus C26.1 BB_VCC as documented above).
+  - 5 unconnected_items (was 6 mid-session, closed U4.2/U4.3 BAT+ trunk
+    after the route_trace checkObstacles MCP fix shipped): C26.1 BB_VCC
+    cap (deferred), BQ_PH stub, CHG_OUT U3.10↔L1.2 (needs route around
+    U3 QFN body, ~7.5 mm), USB_VBUS C17.1 (10.87 mm gap, may need
+    different topology), USB_VBUS J1.A9 (probable routing-through-U3
+    power-path mgmt, not direct to U4).
   - 0 shorts, 0 clearance, 0 tracks_crossing, 0 solder_mask_bridge,
     0 hole_clearance, 0 annular_width — i.e. zero new electrical errors.
   - 99 silk warnings (pre-existing) + 2 lib_footprint_mismatch
     (pre-existing).
+
+**Verified new MCP tool live**: `route_trace checkObstacles` (default
+true, shipped as `c4fe565` on develop) caught the C28.2 GND collision
+on the U4.3→C28.1 attempt immediately, and accepted the X=75.075
+waypointed detour on first try. Compare to earlier session where the
+same surgery cost a full delete/restore round-trip.
 
 **MCP tooling gaps captured** (not yet implemented; see
 `/tmp/claude-1000/mcp_tooling_notes_2026-05-18.md`):
