@@ -3,6 +3,46 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-16 session 3 (find_via_lane v3)
+
+**MCP tooling shipped today** (KiCAD-MCP-Server `develop`):
+
+  - **find_via_lane v3 — Strategy F: obstacle-bbox-aware L-shape.**
+    Replaces v2's blind ±waypoint_max sweep for the L-shape case
+    with a sized-to-the-blocker approach: compute the union bbox of
+    via-layer obstacles, propose 4 L-shapes (one past each bbox
+    edge + clearance margin). Refactored `_find_route_obstacles`
+    into a shared `_iter_route_obstacles` generator so the string
+    and object output share one detection core (byte-identical
+    strings preserved).
+
+**Verified on C26 BB_VCC** (canonical pathological case):
+
+  - v3 Strategy F runs all 4 candidate edges and now returns:
+    - `obstacleBbox` = union extent of via-layer blockers (mm)
+    - `bboxLshapesTried` = per-edge, per-leg blocker list
+  - All 4 still fail. **Root cause** (newly visible in diagnostic):
+    via1 (Y=75.595, north of BB_BOOT2) and via2 (Y=76.669, south
+    of it) straddle the bbox. VHV detours can't help geometrically;
+    east/west HVH hit secondary obstacles (BB_FB diagonal east,
+    BB_SW1/BB_BOOT1 vias west).
+  - C26 truly needs a 3-bend Z-shape (Strategy G — task #153) OR
+    a hand-route in pcbnew.
+  - waypointSearchMax=20 gave the same result as =10 — confirms F
+    sizes detours from bbox + clearance, not from search radius.
+
+**Power_module PCB unchanged this session** — pure tooling work.
+DRC state still 9 unconnected_items (last session: 5 closed of the
+4 cap + 1 trunk batch; rebaseline pending C26 + 4 baseline cases).
+
+**Next-session top of queue**:
+
+  1. **Pick one of**: (a) C26 hand-route in pcbnew GUI (~5 min),
+     or (b) build find_via_lane v4 Strategy G — Z-shape with back-
+     leg X sweep (~30 min, unlocks similar straddling cases).
+  2. **BAT1 reroute** (deferred 4 sessions running, task #138).
+  3. **apply_positions safe wrapper** (task #136).
+
 ## State at end of 2026-05-18 session (close 3 of 4 cap unconnects)
 
 **Routed today** (commits TBD on power_module main):
