@@ -1,0 +1,23 @@
+(version 1)
+
+# Power-net minimum track-width rules.
+# Catches the failure mode where a high-current net (BAT+/BAT-/CELL_TOP/
+# V12_OUT etc.) gets routed by autoroute at the Default 0.2 mm because
+# it isn't assigned to its netclass. 4 A on 0.2 mm external = ~80 °C
+# rise; the rule below would have caught the CELL1_TOP/CELL2_TOP issue
+# from 2026-05-16 NOTES.
+#
+# Widths below the netclass default leave a small "implementation
+# tolerance" cushion — at 1.0 mm POWER_4A still handles 4 A
+# external (IPC-2221, 10 °C rise), well below the 1.5 mm netclass
+# default but above the autoroute-default 0.2 mm catastrophe.
+
+(rule "POWER_4A min track width"
+    (constraint track_width (min 1.0mm))
+    (condition "A.NetClass == 'POWER_4A'")
+)
+
+(rule "POWER_2A min track width"
+    (constraint track_width (min 0.5mm))
+    (condition "A.NetClass == 'POWER_2A'")
+)
