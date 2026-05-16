@@ -3,6 +3,65 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-16 session 2 (DRC filters + integrity check)
+
+**Second batch of MCP tooling shipped on `develop` today** (after the
+placement-constraint work earlier in the day):
+
+  - `get_drc_violations` — now consolidates `unconnected_items` (was
+    silently dropped), adds `type`/`net`/`summaryOnly`/`useCachedReport`
+    filters, and parses net/layer/length/ref out of kicad-cli item
+    descriptions. Commit `fb62505`.
+  - `check_pcb_integrity` — new silent-corruption detector. Three
+    subchecks: `pad_rotation` (multi-instance per-pad orientation
+    drift; uniform=warning, mixed=error), `footprint_overlap`
+    (bbox-overlap on same layer, distinguishes pad-copper overlap as
+    error vs courtyard-only as warning, reports overlap area), and
+    `stacked_pads` (catches same-XY pads on different nets with
+    different numbers; skips same-net/same-number/empty false
+    positives). Commits `6ef1dd8`, `0584fae`, `f02b7fc`.
+
+**Applied to power_module (this session):**
+
+  - **R26/R27 pad rotation fix** (commit `88c5c91`): pads were at
+    rotation 270 deg while footprint was at 0 — remnant of the
+    2026-05-14 `apply_positions.py` incident. R12 (same lib_id) was
+    the reference. Set pad orientation = footprint orientation;
+    cleared 2 cosmetic pad_rotation warnings. DRC: 96 violations
+    (was 98), 5 unconnects unchanged, 0 new errors.
+  - **Integrity audit results on current v11c**:
+    - 0 errors
+    - 3 courtyard_overlap warnings (parts placed inside each other's
+      manufacturing keep-out, pads don't touch):
+      * **R10/L1**: 0.26 mm² (resistor courtyard inside inductor)
+      * **L2/C25**: 0.20 mm² (cap edge inside inductor courtyard)
+      * **R25/J1**: 0.15 mm² (resistor edge inside USB-C courtyard)
+    - 0 stacked_pads, 0 pad_rotation_mismatch
+  - **Decoupling audit (unchanged from earlier today)**: 13 primary
+    too_far decoupling pairs still flagged; C9 → U1.9 has the
+    explicit anchor; the move-and-reroute pass is deferred.
+
+### Next-session candidates (in rough priority order)
+
+1. **BAT1 routing fix** (deferred from earlier today): the 2 vias
+   inside each BAT1 cell-terminal pad + In1.Cu bridge are useless
+   (the trunk continues on B.Cu — they don't actually carry the
+   layer transition). User asked to come back to this. Three options:
+   (a) strip BAT1 nets, manually route on B.Cu around courtyard;
+   (b) move fork-via cluster from pad XY to the actual transition
+   point at (85.60, 64.25); (c) shrink the BAT1 footprint courtyard.
+2. **Decoupling placement pass**: 13 too_far primary caps could
+   be moved via `place_near`. Each move strips routing on that
+   net (BAT+/GND etc.); doable in batches with re-autoroute between.
+3. **Courtyard-overlap warnings**: R10/L1, L2/C25, R25/J1 — nudge
+   one of each pair to clear the courtyard violation. Same routing-
+   damage risk as #2.
+4. **More MCP improvements** (still in backlog): `self.board` mtime
+   auto-reload, freerouting per-net unrouted, parallel-write thread
+   safety audit, `apply_positions` safe wrapper.
+
+---
+
 ## State at end of 2026-05-16 session (placement-constraint v1 landed)
 
 **Tooling shipped on the MCP `develop` branch:**
