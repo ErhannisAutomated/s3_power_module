@@ -3,6 +3,63 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-16 session 7 (Strategy H + C26 structural verdict)
+
+**MCP tooling shipped** (KiCAD-MCP-Server `develop`):
+
+  - **Strategy H — clearance-aware via walk** (task #156, commit
+    `d5f26ac`). `_find_safe_via_point` now requires both segment-
+    clear AND via-clearance-clear at each walk sample, so via1/
+    via2 land at the furthest position safe for both checks.
+    Failure diagnostic adds `viaClearanceAtEndpoint` listing
+    foreign-layer copper that's in the way.
+
+**C26 BB_VCC — verdict: structurally unroutable via through-via
+jumper at default parameters.** With Strategy H applied:
+
+  - With real C26.1 pad as source + minClearance=0.15 mm:
+    `no_safe_via_zone` — diagnostic shows BB_SW1 (In1.Cu) and
+    BB_COMP (In2.Cu) tracks **overlap** the C26.1 pad region
+    (gaps -0.099 mm and -0.275 mm). Any 0.6 mm through via at
+    or near C26.1 will short to these inner-layer traces.
+  - With minClearance=0 (allow zero gap, just refuse overlap):
+    via1 still overlaps BB_BOOT2 by 0.27 mm — via clearance
+    refuses.
+  - With microvia (0.3 mm): same overlaps because the inner-layer
+    tracks pass directly under/over C26.1.
+
+  **The structural issue**: the layout puts BB_SW1, BB_COMP, and
+  BB_BOOT2 routing right through where C26's via has to go. No
+  via tool can fix this — either:
+    (a) move C26 to a less-crowded location (schematic change +
+        re-place), or
+    (b) hand-route BB_VCC as an F.Cu detour around the whole
+        area (no via), or
+    (c) move the inner-layer tracks (re-autoroute).
+
+  None of these are tool-driven fixes. C26 is now formally
+  closed in NOTES as "out of scope for find_via_lane; needs
+  layout-level change".
+
+**Tasks closed this session**: #156 (Strategy H).
+
+**No new tasks queued** — the find_via_lane suite (Strategies A
+through H + via clearance) is now feature-complete for the via-
+jumper use case. Remaining via-jumper failures (like C26) are
+structural and need design changes.
+
+**PCB unchanged this session** (pure tooling work).
+
+**Next-session top of queue**:
+
+  1. **CHG_OUT, BQ_PH** — GUI hand-routing on the 0.5 mm-pitch
+     QFN area (find_via_lane confirmed unsuitable for these).
+  2. **C26** — layout-level decision: move C26, or accept the
+     pre-existing BB_VCC routing topology, or hand-route F.Cu
+     detour.
+  3. **USB_VBUS C17/J1** — design-intent check (look at schematic
+     to understand intended topology before completing).
+
 ## State at end of 2026-05-16 session 6 (find_via_lane v4 + via clearance)
 
 **MCP tooling shipped** (KiCAD-MCP-Server `develop`):
