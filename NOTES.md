@@ -3,6 +3,59 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-16 session 5 (get_component_pads layers + CHG_OUT scout)
+
+**MCP tooling shipped** (KiCAD-MCP-Server `develop`):
+
+  - **`get_component_pads` returns `layers` per pad** (commit `97bb047`).
+    SMD pads get one entry (e.g. `["B.Cu"]`); through-hole/NPTH
+    get the full board Cu stack. Directly motivated by the BAT1
+    misroute (assumed F.Cu, pads were B.Cu). Task #154 closed.
+    Memory updated: [[feedback-check-pad-layer]].
+
+**CHG_OUT (U3.10↔L1.2) investigated — DEFERRED to GUI hand-route.**
+
+  - L1.2 (F.Cu, big inductor pad) at (41, 70) → U3.10 (F.Cu, tiny
+    QFN pin) at (48.4625, 70.25). Existing 2 F.Cu segments from
+    L1.2 went SE to (43, 76.46), abandoned (didn't reach U3).
+  - South route from (43, 76.46) east: blocked by USB_VBUS
+    network + C11.1 pad at (48.28, 76.47).
+  - North route from L1.2 (41, 70) going up: blocked by USB_VBUS
+    track at (39.6, 67.85).
+  - Direct B.Cu route (41,70)→(48.4625, 70.25) clears — but both
+    endpoint pads are F.Cu, so need a via-jumper.
+  - `find_via_lane` proposed `via_jumper` with via2 at (48.514,
+    70.221) — INSIDE U3.10 pad bbox, same-net via-in-pad. **But**
+    via diameter 0.6 mm > pad 10 height 0.25 mm, so via copper
+    extends 0.175 mm beyond pad 10 → 0.046 mm gap to pad 11
+    (GND) → clearance violation. **Bug**: `find_via_lane` doesn't
+    check via-vs-nearby-copper clearance (filed as task #155).
+  - Attempting to extend stub east hits BQ_REGN via at (49.94,
+    70.18); diagonal NE/SE crosses pad 11 (GND) or pad 9 (BAT+);
+    even a microvia on U3.10 itself would still short to pad 11.
+  - **Verdict**: this is a 0.5 mm-pitch QFN with no breakout
+    room. Needs hand-routing in pcbnew GUI — either a microvia
+    on U3.10 with explicit clearance tuning, or moving L1
+    closer/repositioning so the direct route is shorter and
+    fits in the available F.Cu corridor.
+
+**Final DRC state** (back at baseline after restoring abandoned
+L1.2 segments — UUID-only churn discarded):
+  - 5 unconnected_items, 0 shorts, 0 clearance, 0 dangling.
+  - Same 5 baseline cases: BB_VCC C26, BQ_PH, CHG_OUT, USB_VBUS
+    C17, USB_VBUS J1.
+
+**Next-session top of queue**:
+
+  1. **CHG_OUT + BQ_PH**: hand-route in pcbnew GUI (or move U3
+    /L1/C17 to give breakout room). Both are tight QFN routing.
+  2. **C26 BB_VCC** (still deferred): hand-route OR build
+     find_via_lane v4 Strategy G — Z-shape (task #153).
+  3. **Task #155**: find_via_lane via-vs-copper clearance check.
+     Would have caught the CHG_OUT bad proposal in this session.
+  4. **USB_VBUS C17/J1**: design-intent check — may need topology
+     redesign rather than completing a missing trace.
+
 ## State at end of 2026-05-16 session 4 (BAT1 fork-via cleanup)
 
 **Routed today** — BAT1 cell-pad fork-via cleanup + reroute.
