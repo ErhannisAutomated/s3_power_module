@@ -3,6 +3,95 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-17 session (decoupling-cap placement pass)
+
+**MCP tooling shipped on `develop` today** (motivated by bugs surfaced
+during the placement pass):
+
+  - **decoupling_audit 44× faster** (`40aeaa1`): `discover_decoupling_pairs`
+    used to call `get_connections_for_net` per-net, re-loading each
+    sheet's sexp + adjacency + symbol instances every time. On
+    power_module (4 sheets × 55 nets) that was ~57 s — past the MCP
+    request timeout. Added `get_all_net_connections` bulk helper in
+    `wire_connectivity.py`; one-pass per sheet. 57 s → 1.3 s.
+  - **place_near foreign-track collision + run_drc auto-save** (`e9fcbd2`):
+    place_near's bbox-only check missed C6's GND pad landing on a
+    REGOUT trace (created 2 shorting_items + 2 solder_mask_bridge).
+    Added per-pad track-collision check vs every track on the pad's
+    layer (skips same-net). Separately, `run_drc` invoked kicad-cli
+    against the on-disk file without first persisting `self.board`,
+    so the first post-placement DRC silently returned the baseline;
+    added auto-save before the cli call.
+  - **place_near clearance margin** (`f4c5d03`): the strict bbox
+    overlap still missed sub-DRC near-touches. C10's USB_VBUS pad
+    ended 0.009 mm from a BQ_PH trace (under POWER_2A 0.13 mm).
+    Added `clearanceMargin` parameter (default 0.15 mm) that
+    inflates the pad bbox before the foreign-track test.
+
+**Applied to power_module (this session):**
+
+  - **Decoupling placement pass** (commit `22e01fd`): moved 12 of 13
+    too_far primary caps. C6 (5.155 mm) skipped as already close.
+    Audit went from 13 too_far → 5 too_far. Biggest wins:
+    - C9  18.5 → 3.2 mm
+    - C15 19.5 → 5.1 mm
+    - C28 12.7 → 2.4 mm
+    - C26 14.0 → 3.2 mm
+    - C25 16.5 → 4.1 mm
+    - C17 12.9 → 2.6 mm
+    Remaining 5 "too_far" all within 1.5 mm of acceptable (limited
+    by physical congestion near U3.1 USB_VBUS and U4.2 BAT+).
+    Resolved one prior courtyard warning (L2/C25 — cleared by C25
+    move).
+  - **Rip dangling + autoroute** (commit `4b13380`): iteratively
+    ripped 21 dangling tracks + orphan vias until stable, then
+    autorouted. Autoroute introduced 24 zone clearance/hole errors
+    (vias placed without anti-pads on inner planes — `refill_zones`
+    fixed them) and 3 annular_width errors on BAT+/BAT- vias near
+    the battery cells (freerouting used 0.5 mm drill on 0.6 mm pad;
+    reset to project default 0.3 mm).
+
+**Final DRC state:**
+  - 9 unconnected_items (5 pre-existing baseline + 4 from the cap
+    moves that freerouting could not complete: C28.1 BAT+,
+    C26.1 BB_VCC, C7.1 REGOUT, one USB_VBUS pair).
+  - 0 shorting_items, 0 clearance, 0 hole_clearance, 0 annular_width,
+    0 solder_mask_bridge — i.e. zero new electrical errors.
+  - 99 warnings (silk overlap / silk over copper, all pre-existing).
+  - check_pcb_integrity: 2 courtyard_overlap warnings (R10/L1 and
+    R25/J1; L2/C25 cleared by the placement pass).
+
+### Next-session candidates (in rough priority order)
+
+1. **Close the 4 remaining cap unconnects.** Run a second
+   freerouting pass (might pick them up with different seed), or
+   hand-route the 4 short connections in pcbnew. Likely 30-min job.
+2. **BAT1 routing fix** (deferred two sessions running now). The
+   2 vias inside each BAT1 cell-terminal pad + In1.Cu bridge are
+   useless — the trunk continues on B.Cu. Three options unchanged:
+   strip BAT1 nets and hand-route, copy_routing_pattern from a
+   matching trunk, or accept and document the suboptimal topology.
+3. **apply_positions safe wrapper** (deferred — manual git-revert
+   workflow worked well enough for the placement pass).
+4. **MCP polish from earlier list**: self.board mtime auto-reload,
+   freerouting per-net unrouted reporting, parallel-write thread
+   safety audit. Pick whichever bites next.
+
+### Workflow lessons from this session
+
+  - **place_near should always be followed by DRC**, not just
+    integrity check. The track-collision logic catches shorts but
+    not all sub-clearance near-misses (e.g. via to inner-plane zone).
+  - **Refill_zones after any autoroute pass** — freerouting doesn't
+    update anti-pads, so post-autoroute DRC always has spurious zone
+    clearance / hole_clearance errors that refill_zones absorbs.
+  - **Iterate rip-dangling** — removing a leaf trace exposes the
+    upstream segment as dangling. Power_module needed 5 iterations
+    to stabilise.
+  - The MCP server's Python child is long-lived; any time you edit
+    Python code in the MCP, **the user must `/mcp` reconnect** before
+    the change is visible to subsequent tool calls.
+
 ## State at end of 2026-05-16 session 2 (DRC filters + integrity check)
 
 **Second batch of MCP tooling shipped on `develop` today** (after the
