@@ -3,6 +3,83 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## PLAN: PCB restart (agreed 2026-05-16, end of session 8)
+
+User and assistant agreed to clear the PCB and start the layout
+fresh. The schematic stays — it's the source of truth. Reasons:
+the current board has 8 sessions of accumulated routing
+decisions, autoroute artifacts, abandoned routes (CHG_OUT
+stub south), under-sized power traces that can't be widened
+in place (CELL_TOP B.Cu chain), and tight QFN areas (U3) that
+would benefit from re-placement with breakout room.
+
+**Pre-restart state**: 5 baseline unconnects, 8 under-sized
+POWER_4A traces (now flagged by DRC custom rule), tooling
+mature (find_via_lane A-H, route_trace checkObstacles,
+dedupe_traces, place_near, decoupling_audit, get_component_pads
+with layers, modify_trace fixed).
+
+**Restart workflow** (next session):
+
+  1. Read NOTES.md (this file), the project_power_module memory,
+     and projects/power_module/INSTRUCTIONS.md for design intent.
+  2. Snapshot current PCB state (`snapshot_project` MCP tool, or
+     just `git tag pre-restart-2026-05-16`).
+  3. Strip all tracks + vias from PCB (keep components for now —
+     placement reset is step 4).
+  4. Re-place components from scratch, organized by functional
+     group:
+       - Power input (USB-C J1, ESD/TVS, USB-VBUS caps)
+       - Charge path (U3 BQ24xxx + decoupling + inductor L1 +
+         charge-output caps)
+       - BMS (U-something + cell-sense network + balance FETs)
+       - Buck-boost converter (U4 + L + diode + caps)
+       - Cell holder BAT1 (fixed location — board edge)
+       - Output (V12_OUT + protection + connector)
+     Use place_near for decoupling caps after main IC placement.
+     Render with get_board_2d_view after each functional group
+     for visual confirmation before continuing.
+  5. **User adjustment pass** — pause here, user makes manual
+     placement tweaks in pcbnew GUI.
+  6. Routing pass:
+       - Start with high-current trunk: BAT+/BAT-/V12_OUT
+         (POWER_4A, 1.5mm). Route on F.Cu / B.Cu, avoid inner
+         layers (those are pours).
+       - Then cell-series chain (CELL1_TOP, CELL2_TOP — also
+         POWER_4A now thanks to today's netclass fix).
+       - Then medium-current (USB_VBUS, CHG_OUT, BQ_PH — POWER_2A
+         0.8mm).
+       - Then signals (default 0.2mm).
+       - Use route_pad_to_pad with checkObstacles=true so bad
+         routes are caught at the source.
+       - For dense areas, use find_via_lane with minimumStubLength
+         and minClearance set appropriately.
+       - Run run_drc after each functional group to catch
+         regressions early.
+  7. **Validation pass**:
+       - 0 shorts/clearance/dangling.
+       - 0 unconnected (close every ratsnest).
+       - 0 track_width violations (DRC custom rule).
+       - decoupling_audit for IC bypass coverage.
+
+**Things to do BEFORE restart (in this session, before compact)**:
+
+  - All commits in place ✓
+  - NOTES.md updated ✓
+  - This plan section saved ✓
+  - Memory updated with all feedback ✓
+
+**Open questions for the user to weigh in on after the placement
+pass**:
+
+  - C26 BB_VCC: should we re-route around the inner-layer power
+    traces (BB_SW1, BB_COMP), or accept a longer F.Cu detour?
+  - Cell-sense routing topology: in the old board, the BMS IC's
+    cell-sense pins tapped off the B.Cu power chain via F.Cu
+    branches. Reasonable; keep that pattern?
+  - Stitching vias on GND/PWR planes: how aggressive? (Current
+    board had so many that 1.5mm power traces couldn't fit.)
+
 ## State at end of 2026-05-16 session 8 (netclass cleanup + DRC width rule)
 
 **Trace-width audit triggered by user observation that battery
