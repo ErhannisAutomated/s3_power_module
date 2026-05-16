@@ -3,6 +3,54 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-16 session 4 (BAT1 fork-via cleanup)
+
+**Routed today** — BAT1 cell-pad fork-via cleanup + reroute.
+
+Each of the 4 inner BAT1 cell pads (CELL2_TOP pads 2,3 and
+CELL1_TOP pads 4,5) had **three** vias: a pad-center via, a
+south-offset in-pad via, and a 3 mm displaced via — wired
+together by an In1.Cu wide stub + multi-segment narrow jog,
+plus the B.Cu long route. Pure waste: the cell pads sit on B.Cu
+(cell holder is bottom-mount), the long routing chain is on B.Cu,
+no F.Cu transition was ever needed.
+
+**Cleanup**:
+  - Deleted 14 In1.Cu traces (4 wide 1.5mm stubs + 10 narrow jog
+    segments) and **12 vias** (4 pad-center + 4 south-offset +
+    4 displaced).
+  - Added 4 direct B.Cu tracks, 1.5 mm wide, from each cell pad
+    center to the appropriate chain anchor point.
+  - File shrunk -176 lines (224 → 24). 0 new DRC errors.
+  - Commit `309905d` on power_module main.
+
+**Gotcha caught**: BAT1 SMD pads are on **B.Cu**, not F.Cu.
+First-pass cleanup added the new tracks on F.Cu (assuming top);
+DRC immediately flagged them as `track_dangling` with
+`Pad N [CELL*_TOP] of BAT1 on B.Cu` — gave it away. Reverted and
+re-routed on B.Cu. Saved as [[feedback_check_pad_layer]] memory:
+get_component_pads doesn't return layer, so grep the .kicad_pcb
+or test-route + check DRC. Also queued task #154 (MCP improvement
+to add a `layers` field to get_component_pads).
+
+**Final DRC state** (unchanged from baseline):
+  - 5 unconnected_items: BB_VCC C26, BQ_PH, CHG_OUT U3.10↔L1.2,
+    USB_VBUS C17.1, USB_VBUS J1.A9 (same pre-existing list).
+  - 0 shorts, 0 clearance, 0 dangling vias, 0 dangling tracks.
+  - 99 silk warnings + 2 lib_footprint_mismatch (both pre-existing).
+
+**Next-session top of queue**:
+
+  1. **C26 BB_VCC**: hand-route in pcbnew GUI (~5 min) OR build
+     find_via_lane v4 Strategy G — Z-shape with back-leg X sweep
+     (~30 min, task #153).
+  2. **Baseline unconnects** (BQ_PH, CHG_OUT, USB_VBUS C17/J1) —
+     these are design-intent calls; should look at intended
+     topology before adding traces.
+  3. **MCP polish**: task #154 (pad layer in get_component_pads),
+     #136 (apply_positions safe wrapper — placement-only, low
+     priority since route_trace checkObstacles covers routing).
+
 ## State at end of 2026-05-16 session 3 (find_via_lane v3)
 
 **MCP tooling shipped today** (KiCAD-MCP-Server `develop`):
