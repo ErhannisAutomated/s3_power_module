@@ -51,6 +51,37 @@ on the U4.3→C28.1 attempt immediately, and accepted the X=75.075
 waypointed detour on first try. Compare to earlier session where the
 same surgery cost a full delete/restore round-trip.
 
+**Six more MCP commits this session** (all on `develop`):
+  - `c4fe565` — `route_trace checkObstacles` (default-on obstacle
+    refusal, mirroring `route_pad_to_pad`).
+  - `87db988` — `dedupe_traces` + `check_route_segment` +
+    `get_pad_position` param fix bundle.
+  - `dcc9195` — `find_via_lane` v1 (direct + via-jumper + single-
+    waypoint perpendicular-offset search).
+  - `f467da5` — `find_via_lane` v2 (minimumStubLength +
+    2D grid search + axis-aligned 2-waypoint L-shape).
+  - (Earlier today still on the list: place_near tweaks shipped
+    yesterday were `e9fcbd2` + `f4c5d03`.)
+
+**Plus `6f3b690` on power_module main** — used the new
+`dedupe_traces` tool, removed 332 duplicate tracks/vias left by
+prior autoroute SES re-imports across BB_VCC, BB_HDRV1/2, BB_LDRV1/2,
+REGOUT and others. DRC unchanged before/after (electrical no-op),
+file size dropped by 2704 lines.
+
+**find_via_lane v2 — live test summary**:
+  - J1.A9 USB_VBUS with `minimumStubLength=1`: correctly refused
+    (`stub_too_short_source: 0.006 mm < 1.0 mm`). The via-on-pad
+    case is now caught.
+  - C26.1 BB_VCC with `minimumStubLength=0.5`: same refusal at
+    0.289 mm. Means C26 can't be via-jumpered without first
+    hand-routing a stub OUT of C26's pad column. Cleaner
+    diagnostic than v1's silent "via on pad" success.
+  - Strategy D (2D grid) and E (L-shape): wired and didn't crash,
+    but didn't find a clear solution on power_module's pathological
+    cases (C26 needs board-level re-route; J1.A9 needs hand stub).
+    Will exercise on simpler future cases.
+
 **MCP tooling gaps captured** (not yet implemented; see
 `/tmp/claude-1000/mcp_tooling_notes_2026-05-18.md`):
   - **B1**: `route_trace` needs `checkObstacles` param (same pattern as
