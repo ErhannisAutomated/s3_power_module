@@ -3,6 +3,95 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## State at end of 2026-05-18 session (close 3 of 4 cap unconnects)
+
+**Routed today** (commits TBD on power_module main):
+
+  - **C28.1 BAT+** — route_pad_to_pad C28→C27, 0.4 mm F.Cu, 2.29 mm.
+    Direct diagonal route at 1.5 mm width shorted to C15.2 GND (1.43 mm
+    perpendicular distance). Dropping width to 0.4 mm cleared the
+    POWER_2A clearance. `route_pad_to_pad checkObstacles=true` approved.
+  - **C7.1 REGOUT** — 3-segment waypoint around U1's east side:
+    (14.138, 63.625) east to (16.85, 63.625), south to (16.85, 68.204),
+    west to C7.1. First try at X=16.3 shorted to a GND via at
+    (16.290, 66.913) — 0.16 mm via clearance forced the bump to 16.85.
+  - **C11.1 USB_VBUS** — 3-segment route around south of C11.2 GND pad:
+    (49.952, 74.456) south to Y=77.5, west, north into C11.1. Direct
+    diagonal hit 0.031 mm clearance to C11.2.
+
+**Deferred — C26.1 BB_VCC** (needs new tooling or GUI):
+  - U4.24 BB_VCC pad row at Y=77.138 is fenced by BB_HDRV1 and BB_LDRV1
+    driver stubs (X=74.425 and 75.725) on F.Cu — no room for a horizontal
+    BB_VCC trace at that Y.
+  - B.Cu blocked by BB_BOOT2 long trace at Y=75.855 spanning X=57.9 to
+    78.975 — direct vertical B.Cu route at any X in [57.9, 78.975]
+    crosses it.
+  - Workable path: F.Cu south to Y=74.2 (clear of BB_HDRV1), via to
+    B.Cu, east to X=79.5 (past BB_BOOT2 east end), south to Y=78.1, west
+    back to (76.005, 78.123) joining the existing BB_VCC F.Cu chain, via
+    back to F.Cu. **2 vias + 4 segments** for one decoupling cap.
+  - Recommend: hand-route in pcbnew GUI (faster) OR build `find_via_lane`
+    MCP tool (see `/tmp/claude-1000/mcp_tooling_notes_2026-05-18.md`).
+
+**Final DRC state:**
+  - 6 unconnected_items (5 pre-existing baseline: U4.2/U4.3 BAT+ pair
+    needs trunk connection, BQ_PH stub, CHG_OUT stub, USB_VBUS C17,
+    USB_VBUS J1; plus C26.1 BB_VCC as documented above).
+  - 0 shorts, 0 clearance, 0 tracks_crossing, 0 solder_mask_bridge,
+    0 hole_clearance, 0 annular_width — i.e. zero new electrical errors.
+  - 99 silk warnings (pre-existing) + 2 lib_footprint_mismatch
+    (pre-existing).
+
+**MCP tooling gaps captured** (not yet implemented; see
+`/tmp/claude-1000/mcp_tooling_notes_2026-05-18.md`):
+  - **B1**: `route_trace` needs `checkObstacles` param (same pattern as
+    `route_pad_to_pad`). Direct cause of 4 bad routes today that I had
+    to revert. **Promoting to MCP commit this session** if time allows.
+  - **B2**: `get_pad_position` schema/impl mismatch (`pad` vs
+    `padName`/`padNumber`).
+  - **B3**: 30+ duplicate traces left over from autoroute SES imports;
+    `dedupe_traces` tool would clean them up.
+  - **N1**: `close_unconnect(net, padRef, padNumber)` — high-level
+    "complete this ratsnest line" with waypointing + via insertion.
+  - **N2**: `check_route_segment` — standalone obstacle check (cheap
+    pre-flight without committing the route).
+  - **N3**: `find_via_lane` — propose via-jumper through B.Cu/inner when
+    F.Cu is blocked. Would have solved C26.
+
+### Next-session candidates (in rough priority order)
+
+1. **C26.1 BB_VCC via-jumper** in pcbnew GUI (~5 min) OR build
+   `find_via_lane` MCP tool (~1 hr).
+2. **U4.2/U4.3 BAT+ trunk connection** (pre-existing baseline). Closest
+   trunk point is now my new C28→C27 trace at (75.925, 86.236). ~4 mm
+   F.Cu route, must clear BB_SS/BB_RT stubs on U4's south pad row.
+3. **BAT1 routing fix** (deferred three sessions running). Strip useless
+   fork-vias in cell pads + reroute.
+4. **MCP polish**: B1/N2 (route_trace obstacle check + check_route_segment),
+   self.board mtime auto-reload, parallel-write thread safety audit.
+
+### Workflow lessons from this session
+
+  - **`route_trace` is fire-and-forget** — no obstacle check; commits the
+    segment even if it crosses foreign-net copper. Always pair with
+    `run_drc` after a batch and revert on regression. (Or pre-empt with
+    `route_pad_to_pad checkObstacles` when applicable.) See B1 above for
+    the tool fix.
+  - **"Orphan" stubs are not always orphan** — I deleted the 0.65 mm
+    BAT+ stub `25a80d39` thinking it was leftover, but it was the
+    bridge between U4.2 and U4.3 BAT+ pads. Same with C26's east-going
+    fanout — those segments connected C26.1 to C25.1. Always trace where
+    BOTH endpoints of a stub go before deleting. Restore was easy (just
+    `route_trace` with original coords/width), but cost 4 round-trips.
+  - **Pad-row "fence"** — TSSOP/QFP ICs have vertical signal stubs at
+    every pad position. Any horizontal route at Y = pad-row-Y shorts to
+    multiple pads. Always approach the pad from a direction perpendicular
+    to the pad row (above or below), not parallel.
+  - **In1.Cu and In2.Cu are routing layers, not single-net planes** on
+    this board — BAT+ and USB_VBUS appear as discrete traces on inner
+    copper. Don't assume a via to inner copper connects to a continuous
+    rail pour; check first.
+
 ## State at end of 2026-05-17 session (decoupling-cap placement pass)
 
 **MCP tooling shipped on `develop` today** (motivated by bugs surfaced
