@@ -80,6 +80,83 @@ pass**:
   - Stitching vias on GND/PWR planes: how aggressive? (Current
     board had so many that 1.5mm power traces couldn't fit.)
 
+## State at end of 2026-05-19 session (placement tooling sprint)
+
+User and assistant spent the session building placement-quality
+tooling and applying it to the board. Placement is improved but
+NOT yet routable in the dense U4 / U1 areas per user assessment.
+Routing did not start.
+
+**Tooling shipped (KiCAD-MCP-Server `develop`):**
+
+  - `#174` Auto-save fix (e48b9f7) — `_BOARD_MUTATING_COMMANDS`
+    extended with `place_near` + 8 others. SWIG mutations now
+    persist without explicit `save_project`.
+  - `#179` `analyze_congestion` (6435207) — grid pad×ratsnest
+    density hotspots with member-component rollup.
+  - `#182` `get_ratsnest` (d4590c7) — per-segment ratsnest with
+    pad-ref endpoints + pairwise crossing detection.
+  - `#183` `relax_placement` v1 (bd9569e) — force-directed mover
+    (springs along ratsnest, bbox repulsion, default anchors
+    J*/SW*/BAT*/PTH).
+
+**Board state (power_module main, commits 14a143a..307fe75):**
+
+  - User compressed board to 95.1×66.1mm (down from 95×110mm).
+  - User repositioned components to fit inside BAT1 body envelope
+    (~87.5×57mm centered at (46, 31) on B.Cu).
+  - I made a north-spread attempt (commit 7db712f) that moved
+    components OUTSIDE BAT1 body — user reverted (b65af94).
+  - I made a Q3/L2/Q4 cascade-collision mess; reverted.
+  - `relax_placement` pass with ICs locked: ratsnest 1369 mm →
+    1216 mm (-11%), crossings 60 → 51 (-15%), 0 errors, 21 tiny
+    courtyard touches. Commit 307fe75.
+
+**User assessment of result (2026-05-19, end-of-session):** U3 area
+plausibly decluttered. U1 routing looks circuitous. U4 area
+"potentially impossible" — R27 packed between two components on
+wrong side of U4, R22 trace has to snake around to reach BB_FB
+pin. Confirms that `relax_placement` v1's center-to-center spring
+forces are insufficient — caps end up clumped at wrong fan-out
+direction relative to IC pin rows.
+
+**Agreed plan for 2026-05-20:**
+
+  - Unify schematic + PCB autoplacers into one parameterized
+    force-directed engine (task #186, plan in memory
+    `project_autoplacer_unification.md`).
+  - PCB-specific cost terms to add: per-net-class spring strength,
+    layer-aware repulsion, skip-springs for pour-handled nets
+    (GND, BAT+), pad-position springs (not component-center),
+    per-pin fan-out torques.
+  - Existing PCB v1 (`python/commands/pcb_autoplacer.py`) gets
+    replaced. Rolls up tasks #181, #184, #185.
+
+**Open / not-yet-routed:** Same as restart plan — POWER_4A trunk,
+POWER_2A, signals, validation. Tasks #169–172 still pending.
+
+**Routing tool gaps observed this session (#177, #178):**
+
+  - `route_trace.checkObstacles` checks path-crossing-foreign-net
+    but NOT trace-half-width vs foreign-pad clearance. My 1.5 mm
+    V12_OUT trace exiting U4.13 shorted to U4.14 because the check
+    passed (centerline didn't cross U4.14) even though the trace
+    edge did.
+  - `route_pad_to_pad` doesn't auto-narrow for IC pin escape.
+    1.5 mm POWER_4A trace cannot physically exit a 0.65 mm-pitch
+    HTSSOP-28 pin row — needs taper-out behavior to 0.3 mm at the
+    pad, widening to 1.5 mm in open area.
+
+**Open issues backlog:**
+
+  - `#176` Promote stitch_pour_vias from throwaway script to MCP tool
+  - `#177` route_trace trace-vs-pad clearance check
+  - `#178` route_pad_to_pad pin-escape (narrow at IC, widen)
+  - `#181` analyze_congestion layer-aware pad density
+  - `#184` relax_placement pad-position-aware crossing metric (v2)
+  - `#185` relax_placement repulsion convergence (v2)
+  - `#186` Unify schematic + PCB autoplacers (the big one for tomorrow)
+
 ## State at end of 2026-05-16 session 8 (netclass cleanup + DRC width rule)
 
 **Trace-width audit triggered by user observation that battery
