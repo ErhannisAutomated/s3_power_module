@@ -157,6 +157,78 @@ POWER_2A, signals, validation. Tasks #169–172 still pending.
   - `#185` relax_placement repulsion convergence (v2)
   - `#186` Unify schematic + PCB autoplacers (the big one for tomorrow)
 
+## 2026-05-20 — autoplacer unification shipped
+
+Task #186 done.  Schematic + PCB autoplacers now share one
+force-directed engine; PCB-specific physics opt-in via Params
+flags (`use_obb_repulsion`, `use_spring_classes`,
+`rotation_snap_strength`, etc.).  See memory
+[project_autoplacer_unification.md][unif] for the full design.
+
+Key v2 shipped:
+  - Spring classes with 5-level hierarchy
+    (connection > pad-general > net > component > default).
+    Defaults DECOUPLING / LOCAL_SIGNAL / INTER_GROUP / PLANE.
+  - OBB-via-SAT body repulsion with cubic-ramp force shape.
+  - Lever-arm torque on pin-wise spring forces (PCB rotation).
+  - Auto-classify power-net rails as PLANE (no spring force).
+  - 4-phase schedule: cluster → spread → snap → relax.
+  - `PCBAutoplacerViz` — async-window matplotlib viz with
+    spring-class-colored ratsnest, OBB-rotated bbox, etc.
+
+Initial real-board run on power_module produced a layout with
+*shorter* MST length (-2.4%) but *more* crossings (+58%) and the
+charger / buck-boost groups swapping sides of the board.  User
+identified missing piece: pin classes for decoupling caps not yet
+wired up (engine reads from `sess.spring_classes` but no parser
+for `Pin_Spring_Class:N` properties yet — see deferred items in
+the unification memory).
+
+## 2026-05-21 — tuning session, 6 fixes landed
+
+Six bug fixes from running v2 on the real power_module board and
+inspecting the dynamics in Jupyter Lab.  Commits on
+KiCAD-MCP-Server `develop` branch:
+
+  - `784b5f4` — five fixes: rotated-bbox computation (was using
+    world-AABB at current rotation; now uses local-frame bbox),
+    cross-layer springs flag, lever-arm torque on pin-wise
+    springs, geometric repulsion ramp (was linear → first
+    increment slammed components apart), OBB axis tie-break
+    stability (fixes intermittent "components jump and snap back
+    in unison" symptom).
+  - `76e6dbd` — pinwise lever-arm torque sign error (used math
+    Y-up cross product, needed screen-Y-down CCW-visual).  R23
+    case study converged to the wrong stable equilibrium.
+  - `2e2bbed` — schematic torque functions skip PCB components
+    (relied on per-pin outward angles that pads don't have).
+  - `70ffd3b` — force-step damping prevents period-2 oscillation
+    near equilibrium when force_mag < temperature.
+  - `313f100` — normalize spring force by component degree;
+    bounds K_eff regardless of pin count.  Was: 28-pin TSSOP had
+    14× the restoring stiffness of a 2-pin resistor.
+
+After all that, user reports the autoplacer is improved but
+**still oscillates in many cases** (worse in dense clusters).
+Filed task #196 to investigate further; task #195 plans a global
+force-scale knob to simplify tuning.  Routing work (tasks
+#169–172) remains blocked on landing a stable placement.
+
+**Open issues + tasks added today:**
+  - `#194` Unify torque mechanism (lever-arm for schematic too)
+  - `#195` Global force-scale factor (planned for next session)
+  - `#196` Investigate remaining PCB autoplacer oscillation
+
+**Useful artefacts for next session:**
+  - `power_module_v2test.kicad_pcb` — copy of the board used for
+    relax tuning.  Independent of the original, safe to mess with.
+  - `/tmp/claude-1000/work_kicad/pcb_relax_tune.py` — Jupyter
+    tuning script.  Cells: load → open viz → manual step → save.
+    Has all the new knobs (`force_step_damping`,
+    `normalize_spring_force_by_degree`) exposed.
+
+[unif]: ../../../.claude/projects/-home-vagrant-projects-kicad-agent/memory/project_autoplacer_unification.md
+
 ## State at end of 2026-05-16 session 8 (netclass cleanup + DRC width rule)
 
 **Trace-width audit triggered by user observation that battery
