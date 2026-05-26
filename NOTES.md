@@ -229,6 +229,60 @@ force-scale knob to simplify tuning.  Routing work (tasks
 
 [unif]: ../../../.claude/projects/-home-vagrant-projects-kicad-agent/memory/project_autoplacer_unification.md
 
+## 2026-05-27 — re-route after U4 move: 0 shorts, 0 clearance
+
+User moved U4 south (from (89, 44) → (65, 70)) onto an extended board,
+swapped TH1 to a THT thermistor on B.Cu (body threading into cell gap),
+and locked TH1 + BAT1. The board grew from ~95×60 to 95.1×77 mm.
+
+Note: U4 was always LM5176PWPR — earlier task #200's description
+mistakenly said "TPS63810". Corrected.
+
+**Workflow:**
+1. `delete_trace net="*"` (strip leftover B.Cu fragments from old U4)
+2. `relax_placement lockedRefs=["U4","TH1","BAT1","J1","J2","J3","SW1"]`
+   → 64 of 71 components moved to follow U4 south. Notable migrations:
+   C21 (-25mm), R26 (-25mm), C31 (-25mm), C24 (-23mm), D2 (-21mm).
+3. Pre-route 4 BAT1 trunks on B.Cu (same as previous session).
+4. `autoroute` (maxPasses=30, timeout=600) — 489 tracks, 35 vias.
+5. `refill_zones`, `run_drc`.
+
+**Result (best of the day):**
+  - 61 errors, 106 warnings.
+  - **0 shorts** ← U4 move resolved the recurring BAT1.2 issue.
+  - **0 clearance violations**.
+  - 9 track_width (pin-escape stubs — bridge_same_net_pins candidates).
+  - 51 unconnected_items.
+  - 4 lib_footprint_mismatch (cosmetic, pre-existing).
+
+**Discovered MCP bug: stitch_pour_vias outline check**
+  - Ran `stitch_pour_vias net=GND gridPitch=3 apply=true`. Tool added 57
+    vias — all of them along x=0 or y=0 (board edge), `skippedOutside=775`.
+  - Zone.HitTest is matching only points on the zone outline polygon
+    boundary, not points inside it. Needs a point-in-polygon check.
+  - Tracked as task #212.
+
+**Second autoroute pass (after deleting the 57 spurious GND vias):**
+  - Triggered a fresh routing pass since the GND fragments went too.
+  - 714 tracks, 37 vias.
+  - 65 errors, 53 unconnects. Slight regression. The fresh autoroute
+    didn't materially improve on the first pass.
+
+**Remaining unconnect categories:**
+  - ~25 GND inter-pad gaps (need pour vias — blocked by #212).
+  - ~5 BAT+ gaps in the U4 cap cluster (same).
+  - CELL_TOP B.Cu trunk → F.Cu R2/R3 (cell balance resistors) —
+    need a single via to drop from trunk to F.Cu near R2 and R3.
+  - BAT- B.Cu trunk → F.Cu BMS area — need a via near (29, 36).
+  - U3 charger pin gaps: BQ_LODRV, BQ_HIDRV, BQ_PH, BQ_BTST, BQ_VFB,
+    BQ_STAT1. Freerouting partial; another pass might close some.
+  - U4 internal: BB_RT, BB_SS, BB_SW2 — same.
+
+**Resumption hooks:**
+  - Task #212: fix stitch_pour_vias polygon containment.
+  - Task #210: close BAT- east-end (now west-end) gap.
+  - Tasks #169-172: still in_progress / pending.
+
 ## 2026-05-27 — re-route attempt with fixed tooling
 
 Picked up the re-route plan from yesterday's wrap. Three autoroute
