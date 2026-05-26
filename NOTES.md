@@ -229,6 +229,74 @@ force-scale knob to simplify tuning.  Routing work (tasks
 
 [unif]: ../../../.claude/projects/-home-vagrant-projects-kicad-agent/memory/project_autoplacer_unification.md
 
+## 2026-05-27 — via_orphan_pads + widen_return_paths: -15 errors
+
+After the grid-stitching dead-end, built two more targeted tools and
+re-applied to the board.
+
+**via_orphan_pads (#213) — KiCAD-MCP-Server `7dde94d`:**
+  For each F.Cu/B.Cu pad on a plane net (GND, BAT+, etc.) that has no
+  same-net via or track adjacent, place a via just outside the pad with
+  a short stub trace. Via-NEAR-pad, NOT via-in-pad — no special
+  manufacturing required. Tries the pad's outward direction first
+  (perpendicular to QFN/TSSOP pin rows), then the three other
+  cardinals. Default 0.6 mm gap, 0.25 mm stub width.
+
+**widen_return_paths (#214) — `7dde94d`:**
+  For each component with at least one pad on a high-current net
+  (default `POWER_4A`), walk each of its return-net pads (default
+  `GND`) along same-net tracks until hitting a same-net via, then
+  widen the cleared segments to the netclass width (1.5 mm). Clearance
+  checked per-segment via the swept-trace test from #177 — segments
+  that would short are skipped and reported.
+
+**Bonus fix bonanza while integrating:**
+  - `stitch_pour_vias` Outline().Contains() fix (`5531c4c`, #212).
+  - `pair_via` and `widen_return_paths` netclass-iteration fix
+    (`2d38c4c`, `a5d1936`) — KiCAD 9 NETINFO_LIST has no
+    `NetnamesList()`, and `NETINFO_ITEM.GetNetClass()` returns a bare
+    SwigPyObject. Use `GetNetClassName()` and
+    `NET_SETTINGS.GetNetClassByName()` instead. The previous code was
+    wrapped in `try/except` that silently swallowed both errors, so
+    `pair_via netClass=POWER_4A` had been returning empty net sets
+    every call since #206.
+
+**Applied to power_module board:**
+  - 26 GND vias placed (skipped 30 already connected, 6 no clearance).
+  - 2 BAT+ vias placed (C9.1, C8.1).
+  - 25 GND stubs widened to 1.5 mm (matched 23 components, 37 blocked
+    by clearance).
+  - Notable: 3 stitching vias on U4 pin 29 (LM5176 thermal pad) + the
+    surrounding GND stubs widened.
+
+**DRC delta:**
+  - Errors: 65 → 50 (-15).
+  - Unconnects: 51 → 34 (17 closed).
+  - Shorts: 0 → 0 ✓.
+  - Clearance: 0 → 0 ✓.
+  - Track_width: 9 → 13 (some widened stubs expose adjacent narrow
+    segments — next pass for `bridge_same_net_pins`).
+  - New: 2 tracks_crossing, 6 hole_to_hole (widened traces or new
+    vias near existing geometry — manual cleanup).
+
+Board committed at `06c5235`.
+
+**Memory updated:**
+  - `feedback_mcp_restart_prompt.md` — user can't `/mcp` from inside
+    an `AskUserQuestion` dialog. Always ask in plain text.
+
+**Suggested next session:**
+  1. Hand-clean the 2 tracks_crossing (likely from widened stubs
+     intersecting nearby signal traces).
+  2. Investigate 6 hole_to_hole — new GND vias too close to existing
+     vias/holes. Either move the GND via or accept (vias-near-vias
+     are often acceptable depending on JLCPCB process).
+  3. `bridge_same_net_pins` on the 13 track_width violations — most
+     are likely narrow IC-pin bridges.
+  4. Manual route the remaining 34 unconnects (mostly U3 internal
+     signals, BAT1 → R2/R3 cell-balance taps, BAT- west-end → BMS).
+  5. Target zero-DRC.
+
 ## 2026-05-27 — stitch_pour_vias fix + dead-end of grid stitching
 
 Fixed an old bug in `stitch_pour_vias`: it used `ZONE.HitTest(point)`,
