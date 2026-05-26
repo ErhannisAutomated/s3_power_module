@@ -229,6 +229,84 @@ force-scale knob to simplify tuning.  Routing work (tasks
 
 [unif]: ../../../.claude/projects/-home-vagrant-projects-kicad-agent/memory/project_autoplacer_unification.md
 
+## 2026-05-27 — re-route attempt with fixed tooling
+
+Picked up the re-route plan from yesterday's wrap. Three autoroute
+attempts, each providing more diagnostic clarity:
+
+**Setup state at start:**
+  - 0 tracks/vias on the board (yesterday's autoroute output had been
+    committed but we stripped before this session's run).
+  - `verify_netclass_patterns` bootstrapped 8 patterns into
+    `mcp_expected_netclass_patterns` (first-call seed; no drift).
+
+**Attempt #1 — DSN plane fix in action:**
+  - `autoroute` ran clean. `planeLayersFlippedToPower: [In1.Cu, In2.Cu]`
+    confirmed. 448 tracks, 28 vias.
+  - DRC: 95 errors. Critically: BAT+ and BAT- traces all on F.Cu
+    (not inner planes) — the #203 fix works as designed. ✓
+  - BUT: CELL1_TOP, CELL2_TOP had **zero** traces, and BAT+ was
+    only 7 short stubs near components, never reaching BAT1's far end.
+  - Trade-off discovered: with inner layers locked, freerouting can't
+    bridge the 82mm cell-holder span on F.Cu congestion; it just
+    gives up rather than dropping to B.Cu.
+
+**Attempt #2 — pre-route the BAT1 trunks on B.Cu:**
+  - 4 pre-route traces added on B.Cu, 1.5mm POWER_4A:
+      - CELL1_TOP: BAT1.5 (4.85, 12.45) → BAT1.4 (87.15, 30.95)
+      - CELL2_TOP: BAT1.3 (4.85, 30.95) → BAT1.2 (87.15, 49.45)
+      - BAT+: BAT1.1 (4.85, 49.45) → (27, 49.45)
+      - BAT-: BAT1.6 (87.15, 12.45) → (60, 12.45)
+  - `autoroute` (maxPasses=30, timeout=600). 442 tracks, 12 vias.
+  - **BAT+ now has 28 trace segments**: the 22mm B.Cu trunk + a
+    full freerouting-extended F.Cu network through U3 and the
+    decoupling caps.
+  - DRC: 103 errors. Improvement on unconnects (65 → 61) but
+    9 new shorts.
+
+**The recurring BAT1.2 problem:**
+  All 9 shorts involve BAT1 pad 2 (CELL2_TOP @ 87.15, 49.45) being
+  crossed by U4's B.Cu-side signals. This session it was BB_SW1,
+  BB_SW2, BB_PGOOD. Last session (2026-05-26) it was BB_COMPMID,
+  BB_SLOPE. The pattern: every autoroute puts U4's local signals
+  through BAT1.2 because the pad sits inside U4's footprint
+  envelope on B.Cu. Same structural issue, different victim nets.
+
+  Possible permanent fixes (deferred for user review):
+   - Same-net B.Cu pour patch around BAT1.2 (and BAT1.4 for
+     CELL1_TOP) — effectively a fat pad, forces freerouting away.
+     Could be a new MCP tool `pour_around_pad`.
+   - Move U4 east/north to clear BAT1's east edge (placement change,
+     would invalidate routing).
+   - Convert BAT1's east-side pads to F.Cu-only (footprint mod) —
+     but the holder is THT.
+
+**Other observations:**
+  - 10 `track_width` violations remain — pin-escape stubs
+    (0.4–0.9mm) where 1.0mm minimum required. These are
+    `bridge_same_net_pins` candidates.
+  - BAT- east trunk ends at (60, 12.45) but BMS is at (16, 24);
+    freerouting didn't bridge — need a manual route_pad_to_pad or
+    longer pre-route trunk.
+  - 2 lib_footprint_mismatch warnings (pre-existing).
+
+**Committed state for user review:**
+  - `power_module.kicad_pcb` with attempt-#2 routing
+  - `power_module.kicad_pro` with bootstrapped
+    `mcp_expected_netclass_patterns`
+  - Note: this is NOT a clean board. Specifically problematic:
+      - 9 B.Cu shorts at BAT1.2 area (delete those traces; don't
+        commit them as good)
+      - BAT+/BAT- pin-escape stubs at 0.4mm (track_width violations)
+      - Several caps in the cap cluster have unconnects between
+        them (GND mostly)
+
+**Resumption hooks:**
+  - Task #209: Fix BAT1.2 shorts (structural, recurring)
+  - Task #210: Close BAT- east → BMS gap
+  - Task #169: Route POWER_4A trunk (in_progress, partial)
+  - Task #170-172: still pending
+
 ## 2026-05-26 — routing-prep tooling complete; ready for re-route
 
 Closes the day's work. After the post-mortem identified 4 root causes
