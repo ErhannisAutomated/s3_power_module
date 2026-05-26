@@ -3,7 +3,7 @@
 *_drc_violations.json
 ~*.lck
 _autosave-*
-power_module-backups/
+*-backups/
 
 # Freerouting intermediate I/O — rebuilt by autoroute every run.
 # The historical *_planes.dsn/.ses (kept for the layer-type experiment)

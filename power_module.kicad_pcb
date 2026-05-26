@@ -6682,7 +6682,7 @@
 	(footprint "Button_Switch_SMD:SW_SPDT_PCM12"
 		(layer "F.Cu")
 		(uuid "681e7e86-e12a-478b-8799-cf97a210a728")
-		(at 91.509276 32.308559 90)
+		(at 91.509276 31.774 90)
 		(descr "Ultraminiature Surface Mount Slide Switch, right-angle, https://www.ckswitches.com/media/1424/pcm.pdf")
 		(property "Reference" "SW1"
 			(at 0 -3.2 90)
@@ -12901,6 +12901,7 @@
 		)
 	)
 	(footprint "Package_SO:HTSSOP-28-1EP_4.4x9.7mm_P0.65mm_EP2.85x5.4mm_ThermalVias"
+		(locked yes)
 		(layer "F.Cu")
 		(uuid "d00df418-2529-448c-8bb7-e945bebe8969")
 		(at 88.377946 43.812013 90)
