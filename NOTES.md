@@ -229,6 +229,58 @@ force-scale knob to simplify tuning.  Routing work (tasks
 
 [unif]: ../../../.claude/projects/-home-vagrant-projects-kicad-agent/memory/project_autoplacer_unification.md
 
+## 2026-05-27 — stitch_pour_vias fix + dead-end of grid stitching
+
+Fixed an old bug in `stitch_pour_vias`: it used `ZONE.HitTest(point)`,
+which is a *graphical* hit test that matches only points on the
+polygon boundary (within accuracy tolerance), not the interior. The
+result was that every via proposed was on the zone edge (x=0 / y=0
+for our power_module board), not anywhere useful.
+
+**Fix shipped:** KiCAD-MCP-Server `5531c4c` (#212) — replace with
+`SHAPE_POLY_SET.Contains()` for actual point-in-polygon. Strengthened
+the integration test with explicit interior-point assertions; the old
+test trivially passed even with the buggy behavior.
+
+Direct verification (synthetic 40x30 zone):
+  interior (20, 15): zone.HitTest=False, outline.Contains=True
+  boundary (0, 0):   zone.HitTest=True,  outline.Contains=False
+  exterior (50, 50): zone.HitTest=False, outline.Contains=False
+
+**With the fix on the actual board, ran experiment:**
+  - Applied 200 stitching vias on GND with gridPitch=5mm.
+  - Re-autoroute (594 → 882 tracks because freerouting now had
+    240 vias to use as endpoints).
+  - DRC: 81 errors, 5 NEW shorts, 20 track_width violations (worse
+    than the prior 65 / 0 / 9).
+  - 181 via_dangling warnings — stitching vias not touching any
+    trace; just isolated points.
+  - 15 copper_edge_clearance errors — vias at the board edge (x=0).
+  - Net unconnects: 51 → 48 (only 3 closed).
+
+**Key learning: grid stitching alone doesn't close ratsnest entries.**
+A stitching via at (50, 30) doesn't connect an F.Cu GND pad at
+(33, 45) — the pad still needs a trace TO the via, or a via right
+adjacent to the pad. Uniform grid stitching is good for binding layers
+via the pour and for return-current paths, but it's not a substitute
+for proper net connections.
+
+**Better approach for next attempt:**
+  Option A: Add F.Cu and B.Cu GND pours (additional zones on outer
+            layers tied to GND, so thermal-relief pad connections
+            auto-close every F.Cu GND pad).
+  Option B: Targeted vias — for each unconnected F.Cu GND pad, add
+            a via immediately adjacent to it. The In1.Cu pour then
+            absorbs the via and the pad pours into it via thermal.
+  Option C: Bridge via traces — let freerouting connect F.Cu pads
+            to nearest existing same-net via, with maxPasses=100.
+
+Reverted the board state to `574172e` (the cleaner 65-error state
+with 0 shorts).
+
+**Board state remains:** 65 errors, 0 shorts, 0 clearance,
+                          51 unconnects, 9 track_width.
+
 ## 2026-05-27 — re-route after U4 move: 0 shorts, 0 clearance
 
 User moved U4 south (from (89, 44) → (65, 70)) onto an extended board,
