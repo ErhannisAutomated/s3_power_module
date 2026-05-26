@@ -229,6 +229,65 @@ force-scale knob to simplify tuning.  Routing work (tasks
 
 [unif]: ../../../.claude/projects/-home-vagrant-projects-kicad-agent/memory/project_autoplacer_unification.md
 
+## 2026-05-26 — routing-prep tooling complete; ready for re-route
+
+Closes the day's work. After the post-mortem identified 4 root causes
+(#1.1 plane-layer DSN bug, #1.2 stripped CELL_TOP patterns, #1.2.1
+narrow IC bridges, #1.3 missing paired-via tooling), all four got
+shipped as MCP commits on the KiCAD-MCP-Server `develop` branch:
+
+  - `3579223` (#203) — DSN plane-layer type=power fix.
+  - `2457804` (power_module main) — CELL_TOP patterns re-added.
+  - `0a8e8ab` (#207) — `verify_netclass_patterns` MCP tool + autoroute
+    pre-flight check. Stores expected patterns in
+    `mcp_expected_netclass_patterns` (KiCAD won't strip it). Drift
+    surfaced in `netclassPatternDrift` on autoroute response.
+  - `a2674a3` (#206) — `pair_via` MCP tool. Default `netClass=POWER_4A`,
+    `offset=1mm`, tries 4 offsets, dedups against existing same-net
+    vias. Default preview.
+  - `816ef0d` (#205) — `bridge_same_net_pins` MCP tool. Replaces a
+    too-narrow IC-bridge trace with a small filled zone (solid
+    connection mode by default — current actually flows). Default
+    preview.
+
+**State of the board at the wrap:**
+  - 50 DRC errors / 121 warnings (almost all silk, pre-existing).
+  - 16 unconnected_items still to close.
+  - 16 track_width violations (intentional narrow IC connections —
+    candidates for `bridge_same_net_pins`).
+  - 6 BAT1 stitch vias added (4 west-side BAT1 done; 2 east-side
+    rolled back due to conflicts with freerouting traces).
+  - User has manually moved many of the BAT1 traces from In1.Cu →
+    B.Cu, addressing the symptom of the plane-layer DSN bug.
+
+**Suggested workflow for the next session's re-route:**
+
+  1. `verify_netclass_patterns` — bootstraps expected section (this
+     should be the only "bootstrap" call; later calls report drift).
+  2. Strip current tracks + vias (`delete_trace net="*"
+     includeVias=true`) — clean slate to exercise the fixed
+     autoroute.
+  3. `autoroute` — should now keep BAT1 nets on B.Cu/F.Cu (not inner
+     planes) and route CELL_TOP at 1.5 mm. Confirm via the
+     `planeLayersFlippedToPower` and `netclassPatternDrift` fields
+     on the response.
+  4. `refill_zones` to absorb the spurious clearance errors.
+  5. `pair_via netClass=POWER_4A apply=true` to double the
+     high-current vias.
+  6. For any remaining narrow-IC-bridge `track_width` violations:
+     `bridge_same_net_pins` per pair.
+  7. Hand-fixups for whatever unconnects remain.
+  8. `run_drc` — target 0 errors.
+
+**Outstanding follow-ups:**
+
+  - `#169–172` — actually getting the board fully routed + clean DRC.
+  - `#194` — schematic lever-arm torque (autoplacer follow-up,
+    deferred since 2026-05-22).
+  - The KiCAD-strip-patterns recurrence has only been observed once
+    (commit 14a143a, 2026-05-18) over 8 days. `verify_netclass_patterns`
+    is the safety net.
+
 ## 2026-05-26 — autoroute post-mortem: 4 root causes diagnosed
 
 User pushed back on the autoroute output with specific issues. Each
