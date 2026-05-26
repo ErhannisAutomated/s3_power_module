@@ -229,6 +229,43 @@ force-scale knob to simplify tuning.  Routing work (tasks
 
 [unif]: ../../../.claude/projects/-home-vagrant-projects-kicad-agent/memory/project_autoplacer_unification.md
 
+## 2026-05-27 — pin_zone_same_net iterations + applied
+
+User reviewed the pin_zone_same_net dry-run on the board and
+spotted two issues:
+
+1. **2-pad opposite-corner pathology** (#218). With only 2 same-net
+   pads on a footprint, each is the other's only nearest-neighbor,
+   so the NN-distance equals the pair distance and the 1.25× factor
+   always accepts. Result: BAT1 CELL_TOP pads 84 mm apart got
+   classified as adjacent, producing a 2289 mm² zone covering most
+   of the board. Fix: `absoluteMaxDistMm` parameter (default 5 mm)
+   caps pair distance regardless of NN ratio.
+
+2. **Zone overlapping foreign-net pads** (#219). Two same-net pads
+   at opposite ends of an 8-pin SOIC (e.g. U2 USB_VBUS pads 1 and
+   8) are within the 5 mm absolute cap but pads 2-7 of OTHER nets
+   sit between them — a zone bridging them would short the
+   in-between pads. Fix: after computing the cluster bbox, scan all
+   pads on the zone's layer. Reject zones whose bbox intersects any
+   foreign-net pad. Report rejections (and the offending pads) so
+   the user can see what was refused.
+
+**Applied to the board:**
+  17 zones placed across Q1-Q4 dual-FET source/drain bridges, U1/U4
+  paired pins (BAT+, V12_OUT, BB_VCC), J1 shell pads on B.Cu, and the
+  U4 thermal pad on B.Cu. 7 zones correctly rejected — these were
+  exactly the user-warned cases (U2 USB_VBUS 1+8, U3 GND 11+17, U4
+  F.Cu GND-across-package, J1 USB-C pairs with CC pins between).
+
+  DRC unchanged at 38 errors — the zones don't introduce new errors,
+  but the existing 11 track_width violations (from old thin pre-route
+  stubs) persist because the zones run in parallel rather than
+  replacing them. Deleting those stubs would close ~10 errors but is
+  a manual review per stub.
+
+Board committed at `76a44db`.
+
 ## 2026-05-27 — via_orphan_pads v3 + pin_zone_same_net: 38 errors
 
 User reviewed the v1 board and flagged 4 issues:
