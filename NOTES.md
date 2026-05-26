@@ -229,6 +229,94 @@ force-scale knob to simplify tuning.  Routing work (tasks
 
 [unif]: ../../../.claude/projects/-home-vagrant-projects-kicad-agent/memory/project_autoplacer_unification.md
 
+## 2026-05-26 — first autoroute pass (handing off mid-routing)
+
+After the routing-side tooling shipped (#176/#177/#178/#181), I
+started the routing pass.
+
+Approach evolution: tried hand-routing the BAT+ trunk first (per the
+restart plan). Hit immediate pad-clipping issues — trunk widths
+(0.8-1.5 mm) can't physically fit between adjacent IC pads at
+0.65 mm pitch when the cap-to-IC short-branch path crosses
+neighbouring pads. The clearance-aware obstacle check (#177) caught
+all these correctly. Hand-debugging each branch would have taken
+hours.
+
+Pivoted to the autoroute+manual-fixup pattern that worked in past
+sessions. Tagged the clean state as `pre-route-2026-05-26`.
+
+**Routing pass (this session):**
+
+  - 6 intra-IC same-net bridges added with `route_pad_to_pad`
+    (0.3-0.5 mm width): U4.2/3 BAT+, U4.12/13 V12_OUT, U1.9/10
+    BAT+, Q3.7/8 BAT+, Q2.5/6 BQ_PH, Q2.7/8 USB_VBUS.
+  - `autoroute` ran in 149.5 s with the GND-last layer order
+    (`[F.Cu, B.Cu, In2.Cu, In1.Cu]`). 593 tracks + 84 vias.
+  - `refill_zones` (didn't segfault this time) absorbed the
+    spurious clearance + hole_clearance violations that
+    freerouting always produces.  DRC: 358 errors → 54 errors.
+  - Added 4 stitch vias on the west-side BAT1 cell terminals
+    (BAT1.1 BAT+, BAT1.3 CELL2_TOP, BAT1.5 CELL1_TOP, BAT1.6
+    BAT-) to bridge the B.Cu cell pads to the In1.Cu tracks
+    freerouting left floating. Closed 4 of 10 BAT1 unconnects.
+  - East-side BAT1 vias (BAT1.2, BAT1.4) attempted then rolled
+    back — the 0.6 mm vias shorted to nearby freerouting traces
+    (BAT+ at .4, BB_SLOPE at .2). Hand-fix needed.
+
+**State at end of session (commit ed8c4c5):**
+
+  - 50 errors / 121 warnings (1186 baseline before routing was
+    almost all silk noise + courtyard overlaps from placement).
+  - **16 unconnected_items** remaining:
+    - BAT1.2 CELL2_TOP, BAT1.4 CELL1_TOP — east-side vias rolled
+      back (1 each end of those net pairs);
+    - 5 BAT+ branches in the U3/U4 area where freerouting bailed
+      (C28→U4.3 stub, R4→C9 chain, U3.9→trunk, etc.);
+    - 1 V12_OUT (R21→U4.12);
+    - 2 BB_VCC (R27 + middle stub);
+    - 1 BAT- (BAT1.6 → its In1.Cu track — possibly via clearance);
+    - 1 BQ_HIDRV U3.15↔Q2.2 (couldn't route at all);
+    - 1 CHG_OUT U3.10→trunk;
+    - 1 USB_VBUS U2.8 + 1 USB_VBUS J1.A9 chain;
+    - 1 BB_SS C22.1↔U4.8.
+  - **16 track_width** violations (intentional narrow IC-pin /
+    sense connections — should be marked as DRC exclusions in
+    pcbnew GUI).
+  - **2 track_dangling** (the two In1.Cu CELL_TOP tracks whose
+    BAT1 vias I rolled back — connect when the east-side vias are
+    re-added).
+  - **4 copper_edge_clearance** (freerouting placed vias too
+    close to Edge.Cuts — need manual nudging).
+  - **14 courtyards_overlap** (pre-existing placement warnings).
+  - **2 lib_footprint_mismatch** (pre-existing).
+  - **119 silk warnings** (pre-existing).
+
+**Useful artefacts:**
+  - `pcb_initial.png` — clean placement before routing.
+  - `pcb_after_autoroute.png` — F.Cu+B.Cu after freerouting.
+  - `pcb_final_state.png` — F.Cu+B.Cu+Edge.Cuts+F.SilkS after
+    BAT1 vias.  All in `/tmp/claude-1000/`.
+  - `pre-route-2026-05-26` git tag — clean state for retrying.
+
+**Next-session top of queue:**
+
+  1. East-side BAT1 vias (#138 redux): re-add BAT1.2 CELL2_TOP +
+     BAT1.4 CELL1_TOP. The trick is the 0.6 mm via diameter
+     conflicts with adjacent freerouting traces. Options:
+     (a) delete the BAT+/BB_SLOPE F.Cu traces that conflict + let
+         freerouting redo them with the via present;
+     (b) use 0.4 mm via diameter;
+     (c) offset the via 1 mm from pad center + connect with a
+         short B.Cu stub trace.
+  2. Hand-fix the 11 remaining IC-area unconnects with
+     `route_pad_to_pad` + `find_via_lane`. The clearance-aware
+     check (#177) and pin-escape (#178) should help — many of
+     these are short branches that need pin escape from U3/U4.
+  3. Resolve 4 copper_edge_clearance violations (delete those
+     vias + reroute, or move vias inward).
+  4. Mark 16 track_width violations as exclusions in pcbnew GUI.
+  5. Re-run DRC, target 0 errors.
+
 ## 2026-05-26 — width-aware obstacle detection (#177)
 
 Resumed after a few days; user locked U4 in pcbnew (`(locked yes)` on
