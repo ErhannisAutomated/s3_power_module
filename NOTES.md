@@ -229,6 +229,169 @@ force-scale knob to simplify tuning.  Routing work (tasks
 
 [unif]: ../../../.claude/projects/-home-vagrant-projects-kicad-agent/memory/project_autoplacer_unification.md
 
+## 2026-05-26 — width-aware obstacle detection (#177)
+
+Resumed after a few days; user locked U4 in pcbnew (`(locked yes)` on
+the HTSSOP-28-1EP footprint, position 88.378/43.812 mm @ 90°) and the
+placer now respects it via #199.  Closed #200.
+
+Then shipped #177 on KiCAD-MCP-Server `develop`:
+
+  - `_iter_route_obstacles` / `_find_route_obstacles` accept
+    `trace_width_iu` and `min_clearance_iu` (default 0 = legacy
+    centerline behaviour).  Vias get an inflated radius check, tracks
+    use a 4-corner seg-seg min-distance, pads use the existing
+    `pad.HitTest(point, accuracy=...)` SWIG overload with the inflation
+    baked into the accuracy parameter.
+  - New `_resolve_route_clearance(width, clearance, net)` helper:
+    looks up the trace width (param → board default) and clearance
+    (param → net's netclass → board default).
+  - `route_trace`, `route_pad_to_pad`, `check_route_segment` accept a
+    new optional `clearance` (mm) parameter.  When omitted, the
+    netclass clearance is used automatically.
+  - MCP descriptions + zod/JSON schemas updated so the LLM can
+    discover and use the new param.
+  - Tests: 4 unit (resolver) + 4 real-pcbnew integration
+    (edge-clipping pad detected, legacy passes, parallel near-miss
+    track detected, clearance inflates detection zone).  All 1173
+    existing tests still pass.
+
+Pre-existing test cleanup while in the area:
+  - `test_placement_constraints` and
+    `test_placement_constraint_propagation` referenced the literal `1`
+    for `mcp_constraint_version`; bumped them to use the module
+    constant so future version bumps don't need test edits.
+
+**Routing-side tooling that's still pending before the actual routing
+pass can be safely tackled by the LLM:**
+  - ~~`#178` route_pad_to_pad pin-escape~~ ✓ shipped.
+  - ~~`#176` stitch_pour_vias MCP tool~~ ✓ shipped.
+  - ~~`#181` analyze_congestion layer-aware pad density~~ ✓ shipped.
+
+After #178, the routing tasks #169–172 should be unblocked.
+
+### 2026-05-26 follow-up — pin-escape (#178)
+
+Same session as #177. `route_pad_to_pad` gained optional
+`escapeFromWidth`/`escapeFromLength` (and the symmetric `escapeTo*`)
+parameters so a fat trunk trace can exit a tight IC pad as a narrow
+stub before widening. Direction is perpendicular to the pin row
+(footprint center → pad center). Cross-layer escape deferred to a
+follow-up; for now `route_pad_to_pad` rejects escape on cross-layer
+routes cleanly. Tests: 8 (4 unit + 4 real-pcbnew integration).
+Commits on KiCAD-MCP-Server `develop`:
+  - `feat(#178): pin-escape stub support on route_pad_to_pad`
+
+### 2026-05-26 follow-up — stitch_pour_vias (#176)
+
+New MCP tool: `stitch_pour_vias(net, gridPitch, ...)`. Walks a grid
+over the union bbox of all zones on the net; each candidate must be
+inside a zone outline, clear `minClearance` from any foreign-net
+copper (uses the same helper as find_via_lane's via-clearance check),
+and not duplicate an existing same-net via. Default preview; pass
+apply=true to commit. Verified end-to-end on a synthetic real-pcbnew
+40×30 mm board with a single GND zone — 28 vias proposed at 5 mm
+grid pitch. Tests: 9 (5 unit + 4 real-pcbnew integration).
+Commits on KiCAD-MCP-Server `develop`:
+  - `feat(#176): stitch_pour_vias MCP tool`
+
+### 2026-05-26 follow-up — analyze_congestion layer filter (#181)
+
+`analyze_congestion` accepts an optional `layer` parameter; when set,
+the pad-density score is filtered to pads on that copper layer (PTH
+pads count on every layer). Each hotspot also now carries
+`pad_count_by_layer` so the F.Cu vs B.Cu breakdown is visible in one
+call. Disambiguates "12 pads here" hotspots that used to lump both
+sides together.
+
+Docs swept too: `ROUTING_TOOLS_REFERENCE.md` updated for the new
+`clearance`/escape params on route_trace + route_pad_to_pad and a
+new `stitch_pour_vias` section. `PCB_DESIGN_WORKFLOW.md` and
+`TOOL_INVENTORY.md` got the same treatment.
+
+Tests: 5 (3 unit + 2 real-pcbnew integration).
+Commits on KiCAD-MCP-Server `develop`:
+  - `feat(#181): analyze_congestion layer filter + docs sweep`
+
+## 2026-05-22 — placement converged; storage IO + schedule defaults
+
+User tuned the autoplacer to an acceptable layout and asked to fold
+the tuning back into the production defaults, plus implement the
+spring-class storage that had been deferred.  Seven commits on
+KiCAD-MCP-Server `develop`:
+
+**Bug fixes that unblocked tuning (earlier in the session):**
+
+  - `d05e707` — **OBB rotation convention bug.**  `_obb_corners` /
+    `_obb_axes` used raw math-Y-up CCW rotation; every other place
+    in the engine (world_pin_xy, the viz's matplotlib angle) used
+    screen-Y-down CCW.  For asymmetric bboxes at non-multiple-of-
+    90° rotations, the OBB was MIRRORED relative to the rendered
+    rectangle — repulsion pushed against ghost bodies.  User
+    caught it via R10 visibly inside L1's drawn rectangle while
+    `gaps()` reported +1.61 mm of separation.
+  - `f6eaf2d` — sequential (Gauss-Seidel) apply mode behind
+    `Params.sequential_apply`.  Default off; debugging tool.
+  - `7392132` — bbox uses courtyard / fab + offset center.  Pad-only
+    bbox missed body extent of inductors / pin headers anchored at
+    pin 1.  `Component` now carries `bbox_cx/bbox_cy`; every OBB
+    call site uses `obb_center_world()` instead of `(c.x, c.y)`.
+
+**Then the tuning-defaults pass (today's session proper):**
+
+  - `baf16f9` — clean up the 1/r³ repulsion formula (`F = k /
+    max(gap - margin, 0.01)³`).  Replaces the cubic-ramp cutoff,
+    which produced chaotic rebound in dense clusters.  Tests
+    rewritten for the new physics (saturation regime, inverse-cube
+    falloff).
+  - `85879ea` — fold tuned values into `PCBSchedule` defaults:
+    spring_k=1.0, repulsion_k_peak=0.1, rotation_snap_peak=30,
+    pinwise_torque_k=1.0, force_step_damping=0.3, spread_iters=200,
+    snap_iters=100, cluster_iters=0, relax_iters=0, step_spread=0.2,
+    step_snap=0.05.  New `enforce_rotation_snap` flag (default True)
+    runs `snap_rotations()` at end for clean alignment.  New
+    `boundary_k` field plumbed through with sheet bounds — a soft
+    restoring force keeps components on-board during iteration
+    (was a post-clamp only).
+  - `18fc67e` — `load_pcb_session` honors `fp.IsLocked()` when no
+    explicit lockedRefs is supplied.  Right-click → Lock in KiCad
+    now anchors the footprint.  Use this for U4 (thermal vias).
+  - `e16e2c4` — `Pin_Spring_Class:N` + `Spring_Class` + `Body_Margin`
+    footprint properties read at load.  Bare-string or JSON-dict
+    format per the storage design.  Resolves the "decoupling caps
+    should have decoupling strength" thread via explicit annotation
+    rather than heuristic auto-detection.
+  - `25715d2` — `.kicad_pro` spring class IO.  `mcp_spring_classes`
+    section read on load, bootstrap defaults if absent.  No more
+    redoing `sess.nets['USB_VBUS'].spring_class = 'PLANE'` in
+    Jupyter each session.  `mcp_constraint_version` bumped 1 → 2.
+
+User left U4-anchor TODO for tomorrow (#200) — right-click Lock in
+KiCad, save the board.  The placer will now respect it.
+
+**Open follow-ups carried forward:**
+  - `#194` Unify torque mechanism (lever-arm for schematic too) —
+    held until PCB lever-arm fully proven; do as a separate
+    focused commit.
+  - `#176` `stitch_pour_vias` MCP tool.
+  - `#177` `route_trace` trace-vs-pad clearance check.
+  - `#178` `route_pad_to_pad` pin-escape (narrow at IC, widen to
+    trunk) — needed for the actual routing pass.
+  - `#181` `analyze_congestion` layer-aware pad density.
+  - `#200` Anchor U4 in KiCad UI (small action; unblocked).
+  - `#169–172` Route the board (4A trunk → 2A medium → signals →
+    final validation).  Unblocked now that placement is stable.
+
+**Useful artefacts for next session:**
+  - `power_module_v2test.kicad_pcb` — copy used for relax tuning.
+    Independent of the original, safe to mess with.
+  - `/tmp/claude-1000/work_kicad/pcb_relax_tune.py` — local Jupyter
+    tuning script (the user's working copy).  Cells: load → viz
+    → step → save.
+  - `KiCAD-MCP-Server/pcb_relax_tune.py` — checked-in copy of the
+    same script (with the user's hardcoded paths — adjust before
+    running on this machine).
+
 ## State at end of 2026-05-16 session 8 (netclass cleanup + DRC width rule)
 
 **Trace-width audit triggered by user observation that battery
