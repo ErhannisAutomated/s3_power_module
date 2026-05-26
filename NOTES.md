@@ -229,6 +229,102 @@ force-scale knob to simplify tuning.  Routing work (tasks
 
 [unif]: ../../../.claude/projects/-home-vagrant-projects-kicad-agent/memory/project_autoplacer_unification.md
 
+## 2026-05-26 — autoroute post-mortem: 4 root causes diagnosed
+
+User pushed back on the autoroute output with specific issues. Each
+one traced to a concrete cause:
+
+### 1.1 — All BAT1 nets routed on In1.Cu (GND) instead of B.Cu
+
+**Root cause:** pcbnew's `ExportSpecctraDSN` writes every copper layer
+as `(type signal)` in the DSN, even when the layer carries a
+continuous `(plane …)` declaration for GND or BAT+. Freerouting then
+treats the inner pour layers as routable and prefers them for
+long-distance nets (because outer layers are crowded with shorter
+connections).
+
+Aggregate evidence: post-autoroute layer breakdown was
+`F.Cu 509 / B.Cu 36 / In2.Cu 30 / In1.Cu 18` segments — so the
+GND-last layer-order hint *did* bias the bulk routing toward F.Cu,
+but long-haul nets like CELL_TOP got pushed to inner layers anyway
+because they're "uncluttered."
+
+**Fix shipped:** `KiCAD-MCP-Server` commit `3579223` (#203) adds a
+DSN post-process that flips every layer hosting a `(plane …)`
+declaration from `(type signal)` to `(type power)`. Freerouting
+respects `(type power)` and leaves those layers alone — so the next
+autoroute should keep BAT1 nets on B.Cu (or F.Cu via vias).
+
+### 1.2 — BAT1 traces too thin (0.2 mm instead of 1.5 mm POWER_4A)
+
+**Root cause:** `CELL1_TOP` / `CELL2_TOP` netclass patterns were
+silently dropped from `power_module.kicad_pro` in commit `14a143a`
+("Moved footprints around a little") — KiCAD GUI re-saved the file
+and stripped them.  The DSN's `(class POWER_4A …)` block then only
+listed `BAT+ BAT- V12_OUT`, so CELL_TOP fell to Default (0.2 mm).
+The session-8 addition (#157) genuinely shipped but didn't survive
+a later GUI save.
+
+**Fix shipped:** power_module commit `2457804` re-adds both
+patterns. The DSN's POWER_4A class will now include CELL_TOP on
+the next export.
+
+### 1.2.1 — Track-width DRC violations on short IC bridges
+
+**Root cause:** legitimate physics — a 1.5 mm trace can't fit
+between adjacent IC pins at 0.65 mm pitch. The current workflow
+is to mark them as DRC exclusions in pcbnew GUI.
+
+**Better idea (user's):** for adjacent same-net IC pins, create
+a small filled zone covering both pads instead of a thin track.
+The zone bonds the pins, looks like the intentional heat-spread
+pour that IC datasheets call for, and satisfies the trunk-width
+rule automatically.
+
+**Status:** filed as task #205 (`bridge_same_net_pins` MCP tool).
+Not built yet — would need to take a pad-pair, compute a
+minimum-bounding-rect with a small margin, and emit a zone on
+the appropriate layer with the right net.
+
+### 1.3 — Single vias on high-current nets, no parallel pairs
+
+**Root cause:** no tooling for it.  In past sessions
+(`session 7`, 2026-05-15) BAT1 cell-terminal pads got two through-
+vias each by hand. The autoroute path never had the option — DSN
+class-rule via specifications are single-via only; you can specify
+a via size, not "use two of them in parallel." Past automation
+notes never carried this forward; it's a real gap, not lost in
+compaction.
+
+**Options:**
+* Auto-pair via post-autoroute: scan POWER_4A vias, add a second
+  via 0.8–1.0 mm offset, same net. Simple and standard.
+* Bigger single vias: POWER_4A class already uses 1.0 mm via.
+  Larger vias mean larger holes, which take more board area near
+  pads. 1.0 mm is roughly the ampacity equivalent of two 0.6 mm
+  vias for a 4 A signal, so a single 1.0 mm is OK *electrically*,
+  but it's a worse-impedance return path.
+* "Via count" netclass attribute: KiCAD doesn't natively support
+  this. Would require post-processing.
+
+**Status:** filed as task #206 (`pair_via` MCP tool). Recommend the
+post-autoroute auto-pair approach.
+
+### Action items before the next autoroute
+
+  1. ✅ MCP `develop` rebuilt — needs `/mcp` reconnect to load the
+     #203 fix.
+  2. ✅ `.kicad_pro` re-fixed (CELL_TOP patterns).
+  3. Strip the current routing and re-run autoroute. Expect:
+     * BAT1 traces stay on B.Cu/F.Cu (not inner planes).
+     * CELL_TOP routes at 1.5 mm instead of 0.2 mm.
+     * Existing intra-IC pin bridges + west-side BAT1 vias kept
+       (or strip-and-redo entirely).
+  4. After autoroute: implement #206 `pair_via` to double up the
+     high-current vias.
+  5. Consider #205 `bridge_same_net_pins` for the remaining narrow
+     IC-bridge track_width violations.
+
 ## 2026-05-26 — first autoroute pass (handing off mid-routing)
 
 After the routing-side tooling shipped (#176/#177/#178/#181), I
