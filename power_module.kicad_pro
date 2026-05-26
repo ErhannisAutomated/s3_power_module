@@ -735,8 +735,20 @@
   },
   "sheets": [
     [
-      "2ce959fd-551b-4fdb-ba1d-ae6ea409e389",
-      "power_module.kicad_sch"
+      "b0f4a1bd-53e2-4ffd-a882-09b61a25e2e6",
+      "Root"
+    ],
+    [
+      "31ff98ca-e50d-430c-b9a6-207c3c51edee",
+      "BMS"
+    ],
+    [
+      "a27bf574-9eb2-4438-bfa9-c5764e123781",
+      "Charger"
+    ],
+    [
+      "c77ef743-7649-44d0-b4f2-73228fbdadf2",
+      "Buck-Boost"
     ]
   ],
   "text_variables": {},
