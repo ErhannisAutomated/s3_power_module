@@ -229,6 +229,77 @@ force-scale knob to simplify tuning.  Routing work (tasks
 
 [unif]: ../../../.claude/projects/-home-vagrant-projects-kicad-agent/memory/project_autoplacer_unification.md
 
+## 2026-05-27 — via_orphan_pads v3 + pin_zone_same_net: 38 errors
+
+User reviewed the v1 board and flagged 4 issues:
+  1. THT components don't need GND via stubs (they pass through
+     the plane). v1 was adding gratuitous vias on TH1, J1, J2, J3.
+  2. U4 thermal pad already has 8 embedded thermal vias — no
+     extra vias needed. v1 added 3 redundant vias next to them.
+  3. Orphan GND chains: pads connected to each other via tracks
+     but nothing to the plane. v1's "already connected" check
+     trusted track-adjacency and missed these.
+  4. Suggested a proactive zone tool for contiguous same-net pins
+     on ICs — counterpart to the reactive bridge_same_net_pins.
+
+**Shipped two MCP-server iterations:**
+
+  **via_orphan_pads v2** (`862a588`):
+    - Skip PTH/NPTH pads.
+    - Detect footprint-internal thermal vias (PTH same-net pads
+      inside the candidate SMD pad's bbox).
+    - Stub width defaults to max(0.25, netclass min track width).
+    - Conservative connectivity: only same-net VIAS count;
+      adjacent tracks no longer do.
+
+  **via_orphan_pads v3** (`2a291d1`):
+    - Stub-trace clearance check using `_iter_route_obstacles`
+      (the same swept-trace helper widen_return_paths uses).
+    - v2's fat 1.5 mm BAT+ stubs were shorting against adjacent
+      REGOUT/BB_FB/BB_SW2 traces; v3 tries the next cardinal
+      direction (or skips the via) when the stub can't clear.
+
+  **pin_zone_same_net** (`36b05c8`):
+    - Proactive zone for contiguous same-net pins on a footprint.
+    - Adjacency heuristic (per user spec): for each pad, NN-dist
+      = smallest distance to any same-net pin above minPinDistMm
+      (default 0.001 mm; rejects stacked-pad cases).
+    - Two pads adjacent iff distance ≤ adjacencyFactor *
+      max(NN-dist of A, NN-dist of B). Default 1.25 rejects
+      opposite-side IC pins, accepts QFN corner-adjacency.
+    - Union-find clusters; each cluster of ≥2 pads → one zone.
+
+**Bonus MCP-server fixes shipped:**
+  - `5531c4c` (#212): stitch_pour_vias was using ZONE.HitTest()
+    which is a graphical edge-only check, not point-in-polygon.
+    Switched to SHAPE_POLY_SET.Contains().
+  - `2d38c4c` + `a5d1936`: NETINFO_LIST has no NetnamesList() and
+    NETINFO_ITEM.GetNetClass() returns bare SwigPyObject in
+    KiCAD 9 SWIG. Use GetNetClassName() + NET_SETTINGS
+    .GetNetClassByName() instead. This was silently breaking
+    pair_via on every call since #206.
+
+**Board re-applied to 574172e baseline with v3 toolchain:**
+  - 35 GND vias, 9 BAT+ vias, 3 V12_OUT vias added.
+  - 19 GND/return stubs widened to 1.5 mm.
+  - 0 shorts ✓, 0 clearance ✓.
+  - 38 errors total (down from baseline 65, prior best 50).
+  - 26 unconnects, 11 track_width (USB_VBUS pin-escapes mostly,
+    bridge_same_net_pins candidates next session).
+
+Board committed at `67658b9`.
+
+**Open follow-ups:**
+  - 26 unconnects remain — mostly U3 charger internal signals
+    (BQ_LODRV, BQ_HIDRV, BQ_PH, BQ_BTST, BQ_VFB, BQ_STAT1) and
+    U4 internal signals (BB_RT, BB_SS, BB_SW2). May need a
+    localised re-autoroute (delete traces in bbox + re-relax
+    + re-autoroute).
+  - 11 track_width violations — pin-escape stubs that
+    bridge_same_net_pins or finer manual routing could close.
+  - pin_zone_same_net is built but not yet applied to the
+    board — would be most useful on a FRESH autoroute pass.
+
 ## 2026-05-27 — via_orphan_pads + widen_return_paths: -15 errors
 
 After the grid-stitching dead-end, built two more targeted tools and
