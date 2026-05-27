@@ -2412,3 +2412,57 @@ Bottom:
   is reproduced above for permanence.
 - `/tmp/claude/dedupe_no_connects.py` and `dedupe_edge_cuts.py` —
   workarounds for known MCP issues.
+
+## 2026-05-27 — BAT- closure + partial BAT+ plane stitching
+
+### Closed (#210): BAT- east-end unconnect — `05a620c`
+The west F.Cu BAT- island (R1/Q1 area) was disconnected from the east
+B.Cu trunk that goes to BAT1.6. Routed via the top-of-board corridor:
+
+  F.Cu vertical (20.12, 38.93 → 20.12, 8)
+  + via @ (20.12, 8) F.Cu↔B.Cu
+  + B.Cu horizontal (20.12, 8 → 60, 8)
+  + B.Cu south (60, 8 → 60, 12.45) joining the existing trunk.
+
+The y=8 horizontal corridor on B.Cu is the only one not blocked by
+the CELL1_TOP / CELL2_TOP / BAT+ diagonal trunks. DRC: 149 → 147.
+
+### Partial (#169): BAT+ orphan-island plane stitching — `c7e59b4`
+Added 4 BAT+ vias to bridge F.Cu trace endpoints to the In2.Cu plane:
+
+  (71.62, 63.90)  — C8.1
+  (70.79, 53.48)  — trace endpoint near U4 west
+  (36.77, 50.08)  — F.Cu near R3 area
+  (72.52, 39.81)  — trace endpoint
+
+Closed 1 BAT+ ratsnest gap. DRC: 147 → 146.
+
+### Remaining BAT+ unconnects (5)
+The remaining unconnects are stuck because:
+- **C8 ↔ C28** is dense with BB_FB / BB_BOOT1 / BB_EN / BB_VCC traces;
+  any straight or short detour conflicts. Needs careful re-routing
+  around U4's east edge or component repositioning.
+- **SW1.2** sits adjacent to the SW1 NPTH mounting hole; via near
+  pad violates hole_clearance. Could escape SW1.2 with a thin F.Cu
+  trace farther from the NPTH before adding a via.
+- **U3.9** is an HTSSOP pin whose west escape conflicts with the
+  existing USB_VBUS trace at (42.42, 12.30). Tried a 0.5mm escape +
+  via — clearance with U3.10 and short with USB_VBUS.
+- **F.Cu (36.77, 50.08) ↔ B.Cu trunk (4.85, 49.45→27, 49.45)**:
+  trunk's east end at x=27 is 9.8mm short of the F.Cu island's west
+  edge. Could be closed by extending the B.Cu trunk east, but the
+  via at (36.77, 50.08) already bridges F.Cu to In2.Cu plane — the
+  remaining ratsnest gap is between the plane and the orphan B.Cu
+  trunk, which needs its own via to the plane.
+
+### Other findings
+- The pre-existing GND hole_to_hole at (65.158699, 19.29/19.80) is
+  two GND vias stacked 0.5mm apart — must be from earlier autoroute
+  or via_orphan_pads run; needs one of them removed.
+- save_project rewrites the .kicad_sch (drops lib_symbols section)
+  even when only the .kicad_pcb was modified. Filed as task #220;
+  workaround is `git checkout HEAD -- *.kicad_sch` after each save.
+- delete_trace with `position=` deletes both tracks and vias at that
+  position — useful for cleanup but can grab unintended segments
+  when several traces converge (lost a USB_VBUS endpoint once via
+  this).
