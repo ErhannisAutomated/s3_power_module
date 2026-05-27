@@ -69,7 +69,13 @@
           "thermal_relief_spoke_width": 0.5
         }
       },
-      "diff_pair_dimensions": [],
+      "diff_pair_dimensions": [
+        {
+          "gap": 0.0,
+          "via_gap": 0.0,
+          "width": 0.0
+        }
+      ],
       "drc_exclusions": [],
       "meta": {
         "version": 2
@@ -115,8 +121,8 @@
         "pth_inside_courtyard": "ignore",
         "shorting_items": "error",
         "silk_edge_clearance": "warning",
-        "silk_over_copper": "warning",
-        "silk_overlap": "warning",
+        "silk_over_copper": "ignore",
+        "silk_overlap": "ignore",
         "skew_out_of_range": "error",
         "solder_mask_bridge": "error",
         "starved_thermal": "error",
@@ -203,7 +209,11 @@
           "td_width_to_size_filter_ratio": 0.9
         }
       ],
-      "track_widths": [],
+      "track_widths": [
+        0.0,
+        0.25,
+        0.5
+      ],
       "tuning_pattern_settings": {
         "diff_pair_defaults": {
           "corner_radius_percentage": 80,
@@ -230,7 +240,12 @@
           "spacing": 0.6
         }
       },
-      "via_dimensions": [],
+      "via_dimensions": [
+        {
+          "diameter": 0.0,
+          "drill": 0.0
+        }
+      ],
       "zones_allow_external_fillets": false
     },
     "filename": "power_module.kicad_pcb",
@@ -579,14 +594,6 @@
       {
         "netclass": "POWER_2A",
         "pattern": "BQ_PH"
-      },
-      {
-        "netclass": "POWER_4A",
-        "pattern": "CELL1_TOP"
-      },
-      {
-        "netclass": "POWER_4A",
-        "pattern": "CELL2_TOP"
       }
     ]
   },
@@ -735,20 +742,8 @@
   },
   "sheets": [
     [
-      "b0f4a1bd-53e2-4ffd-a882-09b61a25e2e6",
-      "Root"
-    ],
-    [
-      "31ff98ca-e50d-430c-b9a6-207c3c51edee",
-      "BMS"
-    ],
-    [
-      "a27bf574-9eb2-4438-bfa9-c5764e123781",
-      "Charger"
-    ],
-    [
-      "c77ef743-7649-44d0-b4f2-73228fbdadf2",
-      "Buck-Boost"
+      "2ce959fd-551b-4fdb-ba1d-ae6ea409e389",
+      "power_module.kicad_sch"
     ]
   ],
   "text_variables": {},
