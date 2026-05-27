@@ -7107,6 +7107,9 @@
 				(hide yes)
 			)
 		)
+    (property "Pin_Spring_Class:1" "DECOUPLING" (at 195.0 70.0 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
 		(pin "2"
 			(uuid "4217a541-a2b2-4cf9-b307-0e9abde07a0f")
 		)
@@ -7617,6 +7620,9 @@
 				(hide yes)
 			)
 		)
+    (property "Pin_Spring_Class:1" "DECOUPLING" (at 195.0 55.0 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
 		(pin "2"
 			(uuid "15dc5602-fa20-455e-80ca-963364323bc4")
 		)
