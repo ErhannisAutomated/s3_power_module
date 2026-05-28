@@ -1590,6 +1590,15 @@
 				(hide yes)
 			)
 		)
+		(property "mcp_expected_netclass_patterns" "[{\"netclass\":\"POWER_4A\",\"pattern\":\"BAT+\"},{\"netclass\":\"POWER_4A\",\"pattern\":\"BAT-\"},{\"netclass\":\"POWER_4A\",\"pattern\":\"V12_OUT\"},{\"netclass\":\"POWER_2A\",\"pattern\":\"USB_VBUS\"},{\"netclass\":\"POWER_2A\",\"pattern\":\"CHG_OUT\"},{\"netclass\":\"POWER_2A\",\"pattern\":\"BQ_PH\"}]"
+			(at 12.7 12.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(instances
 			(project "power_module"
 				(path "/b0f4a1bd-53e2-4ffd-a882-09b61a25e2e6"
