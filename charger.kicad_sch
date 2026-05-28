@@ -7164,6 +7164,9 @@
 				(hide yes)
 			)
 		)
+    (property "Pin_Spring_Class:1" "{\"U3.1\": \"DECOUPLING\"}" (at 255.0 88.0 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
 		(pin "1"
 			(uuid "aba3f32e-4292-4bd3-adbb-d0600f4f84ab")
 		)
@@ -7240,6 +7243,9 @@
 				(hide yes)
 			)
 		)
+    (property "Pin_Spring_Class:1" "{\"U3.16\": \"DECOUPLING\"}" (at 285.0 95.0 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
 		(pin "1"
 			(uuid "4118f5d5-5272-40e9-ac8f-35e6eb8550a7")
 		)
@@ -7316,6 +7322,9 @@
 				(hide yes)
 			)
 		)
+    (property "Pin_Spring_Class:1" "{\"U3.1\": \"DECOUPLING\"}" (at 240.0 88.0 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
 		(pin "2"
 			(uuid "3295cd0c-7977-4bf4-9e1e-247fc08c6073")
 		)
@@ -7835,6 +7844,9 @@
 				(hide yes)
 			)
 		)
+    (property "Pin_Spring_Class:1" "{\"U3.3\": \"INTER_GROUP\"}" (at 305.0 80.0 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
 		(pin "2"
 			(uuid "ad025ace-afbf-467c-b1cd-23dd80be441e")
 		)
@@ -8453,6 +8465,9 @@
 				(hide yes)
 			)
 		)
+    (property "Pin_Spring_Class:1" "{\"U3.12\": \"DECOUPLING\"}" (at 285.0 100.0 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
 		(pin "2"
 			(uuid "8dd4ab74-79a9-43f4-aadf-0b24eac8a44b")
 		)
@@ -8529,6 +8544,9 @@
 				(hide yes)
 			)
 		)
+    (property "Pin_Spring_Class:1" "{\"U3.6\": \"DECOUPLING\"}" (at 290.0 105.0 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
 		(pin "2"
 			(uuid "4f18f783-b3b4-4df1-b57e-679797663538")
 		)
@@ -8802,6 +8820,9 @@
 				(hide yes)
 			)
 		)
+    (property "Pin_Spring_Class:1" "{\"U3.9\": \"DECOUPLING\"}" (at 295.0 115.0 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
 		(pin "2"
 			(uuid "059529f8-403f-4b41-9d35-57b76453c72e")
 		)
