@@ -3,39 +3,50 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
-## RESUME HERE — end of session 2026-05-29
+## RESUME HERE — end of session 2026-05-30
 
-**Autoplacer overhaul shipped (MCP develop, pushed):** the PCB autoplacer
-(`relax_placement`) now defaults to **intent-group spring normalization**
-(#249, three-level average so a named DECOUPLING target competes on equal
-footing with a high-fan-out rail), **`cluster_iters=50`** (springs settle
-before repulsion), and **`repulsion_k_start=1e-6`** (gentler spread).
-**Incremental autoroute now strips target nets BEFORE the DSN export**
-(#248) — fixes the 400 s freerouting timeout on re-placed boards. Power
-rails stay INTER_GROUP (not PLANE). Commits 6a38608 / b9efe6d / e5545b2.
+**`scrub_region` built, validated, and used (#251 DONE).** New MCP tool
+(on KiCAD-MCP-Server `develop`, **uncommitted** — needs commit/push):
+geometric region-scoped copper cleanup. Given target components it computes
+a per-layer convex hull and deletes copper that's either on a target-only
+net (anywhere) or a shared net inside the hull, then recursively prunes
+dead-ends. Dry-run by default; returns reason-coded kill-list + viz +
+`nowOpenNets`. Design doc `docs/SCRUB_REGION_PLAN.md`; 12 tests. This is the
+tool the old "auto-clean-shared-net-stubs" #251 idea became.
 
-**Charger redo with the new autoplacer (this commit):**
-- Placement WIN — C16 (a U3.1 decoupling cap) now sits **2.4 mm from
-  U3.1 with its hot pad facing U3** (was 5.2 mm facing *away* toward the
-  USB_VBUS cluster). Intent-group validated on the real board. Whole
-  charger re-flowed (U3 locked).
-- Routed **5/10** charger nets clean (BQ_PH, BQ_REGN, BQ_VFB, BQ_VREF,
-  CHG_OUT) in 17.7 s (no timeout). **5 still open:** BQ_HIDRV, BQ_LODRV,
-  BQ_BTST (Q2 gate drives), BQ_STAT1, BQ_TS (long run to TH1).
-- DRC **101**. Most is re-placement aftermath, NOT new breakage:
-  11 shorts + 9 dangling = stale **shared-rail (USB_VBUS/GND/BAT+) charger
-  stubs** orphaned when the caps moved; 32 unconnects = the 5 open nets +
-  the charger's shared-rail connections (stripped, not yet re-routed);
-  rest mostly pre-existing (29 track_width, 4 lib_footprint, 1 TH1/BAT1
-  courtyard, 10 solder_mask_bridge).
+**Charger cleaned + re-routed this session** (board saved; snapshot
+`pre_scrub_charger` is the recovery point):
+- `scrub_region(targets=[U3,L1,Q2,C10,C12-16,R10-14,D1])` deleted 55 tracks
+  + 9 vias + 2 zones. **Cross-checked: every one of the 11 shorts + 6
+  dangling tracks mapped to a kill-list item.** Shorts **11 → 0**.
+- Two incremental autoroute passes closed **11/12 charger-private nets**
+  (incl. the historically-hard CHG_OUT→L1 leg and BQ_PH). `via_orphan_pads`
+  GND dropped 15 plane vias to reconnect the charger F.Cu GND pads.
+- DRC now: **0 shorts, 0 dangling**, **18 unconnected** (down from the
+  original 44 opens). Of the 18: **~14 are tight QFN/SOIC/cap-cluster
+  connections** the autorouter + `route_pad_to_pad` + `find_via_lane` can't
+  clear (C16's own GND pad blocks the F.Cu lane; BQ_LODRV sits under it on
+  B.Cu) — i.e. the same GUI-hand-route territory as prior sessions; **4 are
+  pre-existing out-of-region opens** (C28 BAT+, C21/C7 GND, U4 BB_SW2).
+- Before/after images saved in `projects/power_module/scrub_images/`
+  (00_killlist, 01_before, 02_after_delete, 03_after_route, 04_after_cleanup;
+  PNG + SVG).
 
-**START TOMORROW with task #251** — build the auto-clean-shared-net-stubs
-tool (hand-cleaned these stubs TWICE now; tooling-over-manual). Then use it
-to clear the charger's shared-rail stubs (→ shorts to 0), then attack the
-5 open hard nets — the Q2 gate drives likely need Q2 re-placed or surgical
-routing; BQ_TS is a long haul to the B.Cu thermistor.
-(Recovery: `git checkout HEAD~1 -- power_module.kicad_pcb` reverts this
-re-placement if the re-flowed charger isn't wanted.)
+**Trunks preserved on purpose:** BAT+/USB_VBUS were excluded from the
+autoroute (incremental autoroute clears a net board-wide, which would wipe
+their good out-of-region trunks). Their charger-side pads are among the
+~14 open — reconnect in the **KiCad GUI** (or with a re-poured local
+USB_VBUS zone, which is what scrub removed) since the cluster is too dense
+for the point-to-point tools.
+
+**START NEXT:**
+1. Commit + push the `scrub_region` tool on MCP `develop`.
+2. GUI hand-route (or re-pour) the ~14 tight charger opens: USB_VBUS cluster
+   (U3.1/C16.1/C10.1/Q2.7-8 + trunk), BAT+ cluster (U3.9/C15.1/R10.2/R14.1
+   + trunk), BQ_TS (U3.4↔R11↔R12), and the small gaps (BQ_VREF U3.2 0.39 mm,
+   CHG_OUT U3.10 leg, GND U3.17).
+(Recovery: restore snapshot `pre_scrub_charger`, or
+`git checkout <pre-session> -- power_module.kicad_pcb`.)
 
 ## PLAN: PCB restart (agreed 2026-05-16, end of session 8)
 
