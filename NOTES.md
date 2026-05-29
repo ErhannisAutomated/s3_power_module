@@ -3,6 +3,40 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## RESUME HERE — end of session 2026-05-29
+
+**Autoplacer overhaul shipped (MCP develop, pushed):** the PCB autoplacer
+(`relax_placement`) now defaults to **intent-group spring normalization**
+(#249, three-level average so a named DECOUPLING target competes on equal
+footing with a high-fan-out rail), **`cluster_iters=50`** (springs settle
+before repulsion), and **`repulsion_k_start=1e-6`** (gentler spread).
+**Incremental autoroute now strips target nets BEFORE the DSN export**
+(#248) — fixes the 400 s freerouting timeout on re-placed boards. Power
+rails stay INTER_GROUP (not PLANE). Commits 6a38608 / b9efe6d / e5545b2.
+
+**Charger redo with the new autoplacer (this commit):**
+- Placement WIN — C16 (a U3.1 decoupling cap) now sits **2.4 mm from
+  U3.1 with its hot pad facing U3** (was 5.2 mm facing *away* toward the
+  USB_VBUS cluster). Intent-group validated on the real board. Whole
+  charger re-flowed (U3 locked).
+- Routed **5/10** charger nets clean (BQ_PH, BQ_REGN, BQ_VFB, BQ_VREF,
+  CHG_OUT) in 17.7 s (no timeout). **5 still open:** BQ_HIDRV, BQ_LODRV,
+  BQ_BTST (Q2 gate drives), BQ_STAT1, BQ_TS (long run to TH1).
+- DRC **101**. Most is re-placement aftermath, NOT new breakage:
+  11 shorts + 9 dangling = stale **shared-rail (USB_VBUS/GND/BAT+) charger
+  stubs** orphaned when the caps moved; 32 unconnects = the 5 open nets +
+  the charger's shared-rail connections (stripped, not yet re-routed);
+  rest mostly pre-existing (29 track_width, 4 lib_footprint, 1 TH1/BAT1
+  courtyard, 10 solder_mask_bridge).
+
+**START TOMORROW with task #251** — build the auto-clean-shared-net-stubs
+tool (hand-cleaned these stubs TWICE now; tooling-over-manual). Then use it
+to clear the charger's shared-rail stubs (→ shorts to 0), then attack the
+5 open hard nets — the Q2 gate drives likely need Q2 re-placed or surgical
+routing; BQ_TS is a long haul to the B.Cu thermistor.
+(Recovery: `git checkout HEAD~1 -- power_module.kicad_pcb` reverts this
+re-placement if the re-flowed charger isn't wanted.)
+
 ## PLAN: PCB restart (agreed 2026-05-16, end of session 8)
 
 User and assistant agreed to clear the PCB and start the layout
