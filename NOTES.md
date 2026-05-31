@@ -3,6 +3,56 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## RESUME HERE — end of session 2026-05-31
+
+**Charger surgical pass — 8 routes closed automatically, ~10 remain for GUI.**
+Per-link `route_pad_to_pad` / `find_via_lane` closures on the charger opens
+left by yesterday's autoroute. Two commits on `main`:
+- `211346c` — with-detour snapshot (kept for inspection of what the bad
+  find_via_lane output looks like)
+- `81f2718` — bad BAT+ detour removed (current head)
+
+**Closures (8):** BQ_TS R12.1↔R11.2; BAT+ R10.2↔C15.1 (B.Cu jumper under
+C13), R10.2↔trunk(41.15,25.25), U3.9↔C15.1; GND U3.11↔U3.17 (EP);
+USB_VBUS Q2.7↔Q2.8, C16.1↔U3.1, Q2.8↔C10.1 (B.Cu jumper).
+
+**Remaining ~10 opens for GUI hand-route** (genuine QFN-internal escape or
+C16-boxed-in-by-GND blocks; both `find_via_lane` and `route_pad_to_pad`
+exhausted automated options):
+- USB_VBUS C10/Q2-cluster ↔ U3.1/C16-cluster (single bridge needed; C16.1
+  is surrounded by its own GND pad on F.Cu + the GND plane via on B.Cu)
+- BQ_TS R11.2 → U3.4 (wind-around-R11 corridor crowded by BQ_VREF +
+  BQ_STAT1)
+- BQ_VREF U3.2 → track stub (U3 EP blocks all approaches)
+- CHG_OUT U3.10 leg (QFN-internal escape — pin gap too small for safe via)
+- BAT+ R14.1 → C15.1 (~6 mm direct shot — easy in GUI; my automated
+  attempt was a 47 mm BMS-area detour that I deleted)
+
+**DRC:** 0 shorts, 0 dangling, 10 unconnected (4 pre-existing outside
+charger). Remaining clearance/hole_clearance counts are mostly the
+pre-existing GND plane-via close-packing.
+
+**Two find_via_lane bugs filed in [[mcp_server_issues]]** for the MCP
+backlog: (1) via_jumper strategy's clearance check on the via-layer segment
+missed an existing BAT- track and shorted to it (silent — apply succeeded);
+(2) relaxed `minClearance` enables pathological multi-cm detours through
+unrelated board regions.
+
+**Topology tools design doc** at `KiCAD-MCP-Server/docs/TOPOLOGY_TOOLS_PLAN.md`
+— trace-width configuration-space analysis (region enum, pad-pair
+feasibility, bottleneck width, max-width binary search, multi-trace
+feasibility, count of homotopy-distinct paths). Planned post-backlog work;
+would turn the "route_pad_to_pad failed because [list]" reverse-engineering
+into "pads aren't in the same W-mm component; bottleneck at X; max W is Y."
+
+**START TOMORROW:** user has approved the order: (1) backlog work first
+(MCP items #194, #238, #239, plus the two `find_via_lane` bugs just
+filed); (2) then the topology tools. User plans to finish the ~10 charger
+opens in the KiCad GUI on their own machine.
+
+(Recovery: snapshot `pre_scrub_charger` still valid; or
+`git checkout 4dfcb3d -- power_module.kicad_pcb` for pre-surgical-pass.)
+
 ## RESUME HERE — end of session 2026-05-30
 
 **`scrub_region` built, validated, and used (#251 DONE).** New MCP tool
