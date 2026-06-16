@@ -60,7 +60,7 @@
           "hatch_smoothing_level": 0,
           "hatch_smoothing_value": 0.1,
           "hatch_thickness": 1.0,
-          "min_clearance": 0.5,
+          "min_clearance": 0.13,
           "min_island_area": 10.0,
           "min_thickness": 0.25,
           "pad_connection": 1,
@@ -212,7 +212,8 @@
       "track_widths": [
         0.0,
         0.25,
-        0.5
+        0.5,
+        1.0
       ],
       "tuning_pattern_settings": {
         "diff_pair_defaults": {
@@ -742,8 +743,20 @@
   },
   "sheets": [
     [
-      "2ce959fd-551b-4fdb-ba1d-ae6ea409e389",
-      "power_module.kicad_sch"
+      "b0f4a1bd-53e2-4ffd-a882-09b61a25e2e6",
+      "Root"
+    ],
+    [
+      "31ff98ca-e50d-430c-b9a6-207c3c51edee",
+      "BMS"
+    ],
+    [
+      "a27bf574-9eb2-4438-bfa9-c5764e123781",
+      "Charger"
+    ],
+    [
+      "c77ef743-7649-44d0-b4f2-73228fbdadf2",
+      "Buck-Boost"
     ]
   ],
   "text_variables": {},

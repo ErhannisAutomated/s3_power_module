@@ -7107,9 +7107,15 @@
 				(hide yes)
 			)
 		)
-    (property "Pin_Spring_Class:1" "DECOUPLING" (at 195.0 70.0 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
+		(property "Pin_Spring_Class:1" "DECOUPLING"
+			(at 195 70 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "4217a541-a2b2-4cf9-b307-0e9abde07a0f")
 		)
@@ -7620,9 +7626,15 @@
 				(hide yes)
 			)
 		)
-    (property "Pin_Spring_Class:1" "DECOUPLING" (at 195.0 55.0 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
+		(property "Pin_Spring_Class:1" "DECOUPLING"
+			(at 195 55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "15dc5602-fa20-455e-80ca-963364323bc4")
 		)
@@ -8572,7 +8584,7 @@
 		(on_board yes)
 		(dnp yes)
 		(uuid "ca1a49b1-8db3-4d28-9843-c5b932bfa536")
-		(property "Reference" "BAT?"
+		(property "Reference" "BAT1"
 			(at 175.26 77.47 0)
 			(effects
 				(font
@@ -8651,7 +8663,7 @@
 			)
 			(project "power_module"
 				(path "/b0f4a1bd-53e2-4ffd-a882-09b61a25e2e6/31ff98ca-e50d-430c-b9a6-207c3c51edee"
-					(reference "BAT?")
+					(reference "BAT1")
 					(unit 1)
 				)
 			)
