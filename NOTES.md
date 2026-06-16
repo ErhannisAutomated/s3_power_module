@@ -3,6 +3,86 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## v1 CLOSED — v2 backlog (2026-06-16)
+
+v1 fab-ready: 0 unconnected, no real-clearance errors. Remaining DRC
+(33 track_width + 4 hole_to_hole + 4 lib_footprint_mismatch + 3
+via_dangling + 1 courtyards_overlap + 1 holes_co_located) is all
+deferred-by-decision or known/intentional. Last commit `b006751`.
+
+### Carried forward from prior session
+- **Trace_width family fix** (33 DRC track_width violations). POWER_4A
+  under-sized traces around BB_SW2 / FET gate-drive lines and the
+  V12_OUT / V12_INT power runs. Needs a placement-aware widen pass
+  or accept-and-narrow the netclass.
+- **Stacked GND vias near (65.16, 19.29 / 19.80)** — earlier
+  autoroute or `via_orphan_pads` left two vias 0.5 mm apart. Delete
+  one for v2.
+- **`save_project` rewrites `.kicad_sch`** (drops `lib_symbols`) even
+  when only the PCB was modified. MCP task #220; workaround is
+  `git checkout HEAD -- *.kicad_sch` after each save.
+
+### New from EMC pre-compliance run (kicad-happy, fcc-class-b)
+Risk score 49/100. Three real themes:
+
+- **USB-C J1 has no ESD or EMC filtering** (IO-001, error). Add
+  USBLC6-2SC6 or TPD2E2U06 on D+/D-, plus a 600Ω@100MHz ferrite on
+  VBUS within ~25 mm of the connector. **Single biggest fab-rev item.**
+- **B.Cu coplanar GND pour + dense stitching vias.** With our
+  F.Cu / GND(L2) / PWR(L3) / B.Cu stackup, B.Cu signal traces have
+  PWR as their broadside reference, not GND. A flooded GND pour on
+  B.Cu — heavily stitched to L2-GND (≤5 mm spacing under switching
+  nets, ≤20 mm elsewhere) — gives those signals a local coplanar
+  return. Free copper, big EMC win. The 22 RP-001 findings would
+  close in the same pass.
+- **GND↔PWR decoupling caps at signal vias.** For F.Cu↔B.Cu signal
+  transitions on switching-converter nets, drop a 100 nF cap from
+  GND(L2) to PWR(L3) right next to the via so AC return current can
+  hop planes with low impedance. Apply on BB_SW1/2, BB_HDRV*,
+  BB_LDRV*, BB_BOOT1/2, BQ_HIDRV, BQ_LODRV, BQ_PH.
+- **L2 GND pour audit.** 46 of 49 GP-001 hits report <50% GND-plane
+  coverage on the adjacent layer. Some is genuine (B.Cu over PWR, see
+  above); some is real cuts in the L2 pour around U3/U4 where signal
+  traces on L2 carve slots. Open in GUI, hide non-GND nets, eyeball
+  the L2 fill for fragmentation around the converter and charger.
+- **DC-003 caps too far from via** (×4). C12 specifically — 3.1 mm
+  from nearest via, ~2.2 nH connection inductance. Tighten on v2.
+
+Probe points recommended for pre-compliance near-field scan if we
+ever lab-test: L1, L2 (switching inductors), J1 (USB-C), J3 (I2C).
+
+Board cavity resonances (informational, EE-001):
+(1,0) 752 MHz · (0,1) 929 MHz · (1,1) 1195 MHz · (2,0) 1504 MHz ·
+(2,1) 1768 MHz. Well above switching harmonics; only matters if a
+future revision adds an RF section.
+
+### SPICE baseline (clean — keep for regression)
+All 27 detected subcircuits passed except one model-artifact warning
+on the LC output filter Q (no load damping in the testbench).
+Notable confirmed values:
+- BB feedback dividers R14/R13 (3.6 V trip) and R21/R22 (6.06 V trip):
+  Vfb=0.600 V exact.
+- Current sense R10: 5 A at 50 mV, 10 A at 100 mV.
+- Decoupling C29/C30: Z = 6.4 mΩ @ 1 MHz, 71.6 mΩ @ 100 kHz.
+- BMS balance R4: 42 mA per cell, 176 mW per cell.
+
+If any of those component values change for v2, re-run SPICE on the
+new BOM to catch math regressions:
+```bash
+python3 ~/projects/kicad_agent/kicad-happy/skills/spice/scripts/simulate_subcircuits.py \
+    <analysis.json> --output sim.json
+```
+(Needs sandbox bypass — ngspice's `tmpfile()` writes outside the
+sandbox allowlist. See `reference_kicad_happy.md`.)
+
+### Won't-fix for v2
+- TH1 nested inside BAT1 courtyard — intentional (thermistor under
+  cell for thermal sensing). Confirmed 2026-06-16.
+- V12_OUT pour bridging U4's output pin pair — intentional, not a
+  power-carrying pour, just a pin-bridge.
+
+---
+
 ## RESUME HERE — end of session 2026-06-16
 
 **Second automated pass with the topology-tools-enriched suite. Net
