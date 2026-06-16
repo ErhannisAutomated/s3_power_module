@@ -3,6 +3,104 @@
 Living document; updated at the end of each session so the next session
 can pick up from a cold start (after Claude Code context compaction).
 
+## RESUME HERE — end of session 2026-06-16
+
+**Second automated pass with the topology-tools-enriched suite. Net
+DRC: 92 → 42 violations.** The big win wasn't unconnected closure (only
+2 of 8 remaining opens fell to automation); it was that 24 plane-via
+clearance + 24 hole_clearance violations dissolved once the autoroute's
+new vias triggered `refill_zones`. The user hadn't refilled after the
+2026-05-31 surgical pass so the pour-carved holes were stale.
+
+### What automation closed this pass
+
+1. **R14 BAT+ plane connection** (commit-ready): `via_orphan_pads
+   net=BAT+` placed a stitching via at (42.49, 3.75) F.Cu↔B.Cu, dropping
+   R14.1 onto the In2.Cu BAT+ plane. One-call fix; the prior session's
+   surgical pass had missed this.
+2. **BQ_VREF complete net** (commit-ready): `autoroute(nets=["BQ_VREF"])`
+   placed 14 tracks + 2 vias and closed every BQ_VREF open. The 2 vias
+   passed through the GND/BAT+ planes and `refill_zones` carved
+   clearances around them cleanly.
+
+### What automation tried and couldn't close
+
+The 8 remaining opens are the same shape as the 5/31 hand-off — the
+new topology tools confirm them all as **topologically reachable** but
+the swept-trace / via-clearance check refuses the actual placement.
+Recorded `pre_route_audit` confirms 47/48 spokes reachable at netclass
+widths; the unreachable one is a 4.4 mm² BAT+ F.Cu pour (too tight to
+host a 1.5 mm POWER_4A trace; design constraint, not a routing blocker).
+
+| Open | Net | Why automation failed |
+| --- | --- | --- |
+| U3.4 ↔ R11.2 | BQ_TS | corridor 0.24 mm bottleneck (just fits 0.2 mm trace), but `find_via_lane`'s safe via zone shorts to B.Cu BAT- copper south of R11; `route_pad_to_pad` straight line blocked by R11-1 pad |
+| U3.10 stub | CHG_OUT | QFN-internal escape — pin pitch (0.5 mm) too small for any via diameter to land between U3.10 and the adjacent BAT+/GND pin tracks. The 2 pre-existing clearance errors (BAT+/GND vs U3.10) are part of the same problem |
+| U4.18 ↔ Zone | BB_SW2 | `find_via_lane` via_clearanceAtEndpoint: 0.001 mm gap to BB_HDRV2 on B.Cu — basically touching |
+| C28.1 BAT+ | BAT+ | `via_orphan_pads` reports `no clearance` (dense BB area; adjacent BB_*-net copper) |
+| C21.2 GND | GND | BB_BOOT2 on B.Cu blocks safe via insertion near pad |
+| C7.2 GND | GND | ALERT track on B.Cu 0.082 mm too close to candidate via (near miss) |
+| USB_VBUS C10.1 ↔ C16.1 | USB_VBUS | C16-2 GND pad surrounds C16-1 on F.Cu; new BQ_VREF route from this pass also contributes to blocking |
+| USB_VBUS track ↔ track | USB_VBUS | BQ_STAT1 + Q2-6 BQ_PH copper blocks the bridging segment |
+
+### Two near-misses if you want to push automation further
+
+- **C7.2 GND**: 0.082 mm overlap with B.Cu ALERT track on the candidate via.
+  A 0.35 mm microvia might fit (if the board can do 0.2 mm drill). Or
+  manually pick the via spot 0.5 mm further west.
+- **BQ_TS U3.4 ↔ R11.2**: `check_pad_routability_multilayer` lists 50
+  via candidates; the nearest useful one is at (46.05, 9.948) F.Cu↔B.Cu.
+  An explicit `add_via` at that spot followed by `route_trace` segments
+  on both layers MIGHT close it without disturbing BQ_VREF.
+
+### DRC delta this session
+
+| Type | Baseline 2026-06-16 | End-of-session |
+| --- | --- | --- |
+| unconnected_items | 10 | 8 |
+| clearance | 26 | 2 (both PRE-EXISTING; BAT+/GND vs U3.10) |
+| hole_clearance | 24 | 0 |
+| via_dangling | 3 | 3 (pre-existing V12_OUT × 2 + GND × 1) |
+| track_width (POWER_4A under-sized) | 19 | 19 (pre-existing) |
+| **TOTAL** | **92** | **42** |
+
+The 19 track_width violations are the pre-existing under-sized POWER_4A
+traces flagged by the custom rule — they predate the entire session
+and need a placement-driven widen pass to clear (or accept).
+
+### Caveat: incremental autoroute side-effect
+
+Running `autoroute(nets=[BQ_TS, BQ_VREF, CHG_OUT])` succeeded for
+BQ_VREF but the BQ_TS + CHG_OUT additions were dead-end stubs that I
+deleted. **Side-effect noted:** deleting the BQ_TS stubs broke the
+previously-implicit R11.2 ↔ R12.1 connection because those stubs WERE
+that connection (freerouting's strip phase had wiped the original
+R11.2↔R12.1 segment). One-call fix: `route_pad_to_pad R11.2 → R12.1
+width=0.2` restored it cleanly. **Lesson for next session:** before
+deleting freerouting-added stubs on an incrementally-routed net,
+verify whether they're connecting OTHER pads on that net, not just
+the open you were trying to close.
+
+### Files / commits
+
+- Pre-pass snapshot: `snapshots/power_module_snapshot_steprouting-resume_pre_automated_pass_2026-06-16_*`
+- Post-pass snapshot: `snapshots/power_module_snapshot_steprouting-resume-end_post_automated_pass_2026-06-16_*`
+- Board state committed; push from your own machine per workflow.
+
+### START NEXT
+
+GUI hand-route the same ~8 opens that 5/31 left. Optional: try the
+two near-misses listed above before opening KiCad. After GUI close,
+final `run_drc` should give 0 unconnected + only the 19 pre-existing
+track_width (or 0 if a widen pass is run). Then `export_bom` +
+`export_gerber` and the design is fab-ready.
+
+(Recovery: snapshot `pre_automated_pass_2026-06-16`, or
+`git checkout 6a41667 -- power_module.kicad_pcb` for the 5/31 hand-off
+state.)
+
+---
+
 ## RESUME HERE — end of session 2026-05-31
 
 **Charger surgical pass — 8 routes closed automatically, ~10 remain for GUI.**
